@@ -28,3 +28,10 @@ export interface OverrideSecurity {
 
 export type EditIssueConfig = Notifiable & OverrideEditable & OverrideSecurity
 
+export enum RequestMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+}
+
