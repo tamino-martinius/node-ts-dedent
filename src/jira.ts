@@ -76,6 +76,11 @@ export class Jira {
     return res.status === 200 ? res.data : undefined;
   }
 
+  async updateIssue(keyOrId: string, body: Dict<any>, config: EditIssueConfig): Promise<boolean> {
+    const res = await this.request(RequestMethod.PUT, `issue/${keyOrId}`, config, body);
+    return res.status === 204;
+  }
+
 };
 
 export default Jira;
