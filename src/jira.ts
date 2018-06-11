@@ -71,6 +71,11 @@ export class Jira {
     return res.status === 201 ? res.data : undefined;
   }
 
+  async getIssue(keyOrId: string): Promise<Issue | undefined>{
+    const res = await this.request(RequestMethod.GET, `issue/${keyOrId}`);
+    return res.status === 200 ? res.data : undefined;
+  }
+
 };
 
 export default Jira;
