@@ -7,3 +7,10 @@ export interface Response {
   status: number;
 }
 
+export interface JiraConfig {
+  url: string;
+  username: string;
+  password: string;
+  version?: string;
+}
+
