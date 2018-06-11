@@ -35,3 +35,10 @@ export enum RequestMethod {
   DELETE = 'DELETE',
 }
 
+export interface Issue extends Dict<any> {
+
+}
+
+export interface Comment extends Dict<any> {
+
+}
