@@ -66,6 +66,11 @@ export class Jira {
     });
   }
 
+  async createIssue(body: Dict<any>, updateHistory: boolean = false): Promise<Issue | undefined> {
+    const res = await this.request(RequestMethod.POST, `issue`, { updateHistory }, body);
+    return res.status === 201 ? res.data : undefined;
+  }
+
 };
 
 export default Jira;
