@@ -25,6 +25,15 @@ export class Jira {
     this.apiBaseUrl = new URL(`rest/api/${this.version}/`, this.url);
   }
 
+  static paramsToQuery(params: Dict<any> = {}): string {
+    const paramKeys: string[] = Object.keys(params).sort();
+    if (paramKeys.length > 0) {
+      return '?' + paramKeys.map(key => `${key}=${encodeURIComponent(params[key])}`).join('&');
+    } else {
+      return '';
+    }
+  }
+
 };
 
 export default Jira;
