@@ -14,3 +14,17 @@ export interface JiraConfig {
   version?: string;
 }
 
+export interface Notifiable {
+  notifyUsers?: boolean;
+}
+
+export interface OverrideEditable {
+  overrideEditableFlag?: boolean;
+}
+
+export interface OverrideSecurity {
+  overrideScreenSecurity?: boolean;
+}
+
+export type EditIssueConfig = Notifiable & OverrideEditable & OverrideSecurity
+
