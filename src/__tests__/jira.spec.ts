@@ -44,3 +44,40 @@ beforeEach(() => {
   requestString = '';
 });
 
+describe('Jira', () => {
+  let url = 'https://example.com';
+  let username = 'foo';
+  let password = 'bar';
+
+  const getJira = () => new Jira({ url, username, password });
+
+  describe('#getIssue', () => {
+    let issueKey = 'JIRA-1234';
+    const subject = () => getJira().getIssue(issueKey);
+    context('when issue is found', {
+      definitions() {
+        responseStatus = 200;
+        responseBody = { key: issueKey };
+      },
+      tests() {
+        it('returns issue', async () => {
+          const issue = await subject()
+          expect(issue).toEqual(responseBody);
+        });
+      },
+    });
+
+    context('when issue is not found', {
+      definitions() {
+        responseStatus = 404;
+      },
+      tests() {
+        it('returns undefined', async () => {
+          const issue = await subject()
+          expect(issue).toBeUndefined();
+        });
+      },
+    });
+  })
+});
+
