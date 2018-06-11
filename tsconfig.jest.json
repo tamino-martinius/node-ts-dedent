@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "module": "commonjs"
+  },
+  "globals": {
+    "ts-jest": {
+      "enableTsDiagnostics": true
+    }
+  }
+}

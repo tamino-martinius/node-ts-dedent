@@ -1,0 +1,23 @@
+language: node_js
+node_js:
+  - '4'
+  - '4.3.2' # AWS Lambda
+  - '5'
+  - '6'
+  - '6.10.3' # AWS Lambda
+  - '7'
+  - '8'
+  - '8.10' # AWS Lambda
+  - '9'
+  - '10'
+  - 'node'
+  - 'iojs'
+script:
+  - npm run ci
+
+# matrix:
+#   allow_failures:
+#     - node_js: 'iojs'
+#     - node_js: '4.3.2'
+#     - node_js: '4'
+#     - node_js: '5'
