@@ -7,3 +7,6 @@ import {
   Notifiable,
   EditIssueConfig,
 } from './types';
+import { URL } from 'url';
+import https from 'https';
+
