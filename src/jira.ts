@@ -95,6 +95,11 @@ export class Jira {
     return res.status === 204;
   }
 
+  async assignIssue(keyOrId: string, body: Dict<any>): Promise<boolean> {
+    const res = await this.request(RequestMethod.PUT, `issue/${keyOrId}/assignee`, {}, body);
+    return res.status === 204;
+  }
+
 };
 
 export default Jira;
