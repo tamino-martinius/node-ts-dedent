@@ -28,6 +28,13 @@ export interface OverrideSecurity {
 
 export type EditIssueConfig = Notifiable & OverrideEditable & OverrideSecurity
 
+export interface SearchIssuesConfig {
+  expand?: string[];
+  fields?: string[];
+  fieldsByKeys?: boolean;
+  properties?: string[];
+}
+
 export enum RequestMethod {
   GET = 'GET',
   POST = 'POST',
