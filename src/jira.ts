@@ -6,6 +6,7 @@ import {
   Response,
   Notifiable,
   EditIssueConfig,
+  Page,
 } from './types';
 import { URL } from 'url';
 import https from 'https';
