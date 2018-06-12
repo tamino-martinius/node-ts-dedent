@@ -105,6 +105,30 @@ export class Jira {
     return res.status === 204;
   }
 
+  async getIssueChangeLogPage(keyOrId: string, limit: number = 100, skip: number = 0): Promise<any | undefined> {
+    const res = await this.request(RequestMethod.GET, `issue/${keyOrId}/changelog`, {
+      maxResults: limit,
+      startAt: skip,
+    });
+    return res.status === 200 ? res.data : undefined;
+  }
+
+  async getIssueCommentPage(keyOrId: string, limit: number = 100, skip: number = 0): Promise<any | undefined> {
+    const res = await this.request(RequestMethod.GET, `issue/${keyOrId}/comment`, {
+      maxResults: limit,
+      startAt: skip,
+      // TODO orderBy, expand https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-comment-get
+    });
+    return res.status === 200 ? res.data : undefined;
+  }
+
+  // TODO Add Comment https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-comment-post
+
+  // TODO Get Comment https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-comment-id-get
+
+  // TODO Update Comment https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-comment-id-put
+
+  // TODO
 };
 
 export default Jira;
