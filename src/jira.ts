@@ -59,8 +59,10 @@ export class Jira {
       console.log(options, url.toJSON());
 
       const req = https.request(options, res => {
-        res.on('data', buffer => resolve({
-          data: JSON.parse(buffer.toString()),
+        let body = '';
+        res.on('data', buffer => body += buffer.toString());
+        res.on('end', () => resolve({
+          data: JSON.parse(body),
           status: res.statusCode || 902,
         }));
         res.on('error', buffer => reject(JSON.parse(buffer.toString())));
