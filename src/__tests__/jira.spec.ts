@@ -34,6 +34,7 @@ const requestMock = function (options, cb) {
   this.end = () => {
     if (callbacks.data) {
       callbacks.data(JSON.stringify(responseBody));
+      callbacks.end();
     }
   }
   return this;
