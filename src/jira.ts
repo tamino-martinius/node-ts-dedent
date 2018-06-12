@@ -90,6 +90,11 @@ export class Jira {
     }
   }
 
+  async deleteIssue(keyOrId: string, deleteSubtasks: boolean = true): Promise<boolean> {
+    const res = await this.request(RequestMethod.DELETE, `issue/${keyOrId}`, { deleteSubtasks });
+    return res.status === 204;
+  }
+
 };
 
 export default Jira;
