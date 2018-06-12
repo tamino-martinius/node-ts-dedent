@@ -7,6 +7,7 @@ import {
   Notifiable,
   EditIssueConfig,
   Page,
+  SearchIssuesConfig,
 } from './types';
 import { URL } from 'url';
 import https from 'https';
@@ -123,6 +124,23 @@ export class Jira {
       // TODO orderBy, expand https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-comment-get
     });
     return res.status === 200 ? res.data : undefined;
+  }
+
+  async searchIssuesPage(jql: string, config: SearchIssuesConfig = {}, page: Page = {}): Promise<Dict<any>> {
+    const expand = (config.expand || []).join(',');
+    const res = await this.request(RequestMethod.POST, `search`, {}, {
+      maxResults: 100,
+      startAt: 0,
+      ...page,
+      jql,
+      expand,
+      fields: config.fields,
+      fieldsByKeys: config.fieldsByKeys,
+      properties: config.properties,
+    });
+    console.log(res);
+
+    return res.status === 200 ? res.data : {};
   }
 
   // TODO Add Comment https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-comment-post
