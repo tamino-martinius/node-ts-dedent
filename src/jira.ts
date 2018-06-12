@@ -143,7 +143,8 @@ export class Jira {
   }
 
   async searchIssuesPage(jql: string, config: SearchIssuesConfig = {}, page: Page = {}): Promise<Dict<any>> {
-    const expand = (config.expand || []).join(',');
+    const expandFields = config.expand || [];
+    const expand = expandFields.length > 0 ? expandFields.join(',') : undefined;
     const res = await this.request(RequestMethod.POST, `search`, {}, {
       maxResults: 100,
       startAt: 0,
