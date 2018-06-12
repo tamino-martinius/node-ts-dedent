@@ -100,6 +100,11 @@ export class Jira {
     return res.status === 204;
   }
 
+  async addIssueAttachment(keyOrId: string, body: Dict<any>): Promise<boolean> {
+    const res = await this.request(RequestMethod.POST, `issue/${keyOrId}/assignee`, {}, body);
+    return res.status === 204;
+  }
+
 };
 
 export default Jira;
