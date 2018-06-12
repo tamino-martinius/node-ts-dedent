@@ -49,6 +49,10 @@ export class Jira {
         protocol: url.protocol,
         port: url.port,
         path: url.pathname + Jira.paramsToQuery(params),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
         auth,
         method,
       };
