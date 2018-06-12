@@ -35,6 +35,11 @@ export enum RequestMethod {
   DELETE = 'DELETE',
 }
 
+export interface Page {
+  startsAt?: number;
+  maxResults?: number;
+}
+
 export interface Issue extends Dict<any> {
 
 }
