@@ -60,6 +60,14 @@ describe('Jira', () => {
   describe('#getIssue', () => {
     let issueKey = 'JIRA-1234';
     const subject = () => getJira().getIssue(issueKey);
+
+    it('makes call to jira API', async () => {
+      await subject();
+      expect(requestString).toEqual(
+        'GET https://foo:bar@example.com/rest/api/2/issue/JIRA-1234'
+      );
+    });
+
     context('when issue is found', {
       definitions() {
         responseStatus = 200;
@@ -67,7 +75,7 @@ describe('Jira', () => {
       },
       tests() {
         it('returns issue', async () => {
-          const issue = await subject()
+          const issue = await subject();
           expect(issue).toEqual(responseBody);
         });
       },
@@ -79,7 +87,7 @@ describe('Jira', () => {
       },
       tests() {
         it('returns undefined', async () => {
-          const issue = await subject()
+          const issue = await subject();
           expect(issue).toBeUndefined();
         });
       },
