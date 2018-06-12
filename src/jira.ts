@@ -56,7 +56,7 @@ export class Jira {
         auth,
         method,
       };
-      console.log(options, url.toJSON());
+      // console.log(options, url.toJSON());
 
       const req = https.request(options, res => {
         let body = '';
