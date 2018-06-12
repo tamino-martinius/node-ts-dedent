@@ -81,6 +81,15 @@ export class Jira {
     return res.status === 204;
   }
 
+  async editIssue(keyOrId: string, body: Dict<any>, config: EditIssueConfig = {}): Promise<Issue | undefined> {
+    const success = await this.updateIssue(keyOrId, body, config);
+    if (success) {
+      return await this.getIssue(keyOrId);
+    } else {
+      return undefined;
+    }
+  }
+
 };
 
 export default Jira;
