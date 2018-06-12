@@ -47,6 +47,13 @@ export interface Page {
   maxResults?: number;
 }
 
+export interface GeneratorConfig {
+  fn: (...args: any[]) => Promise<any>;
+  key: string;
+  pageSize: number;
+  args: any[];
+}
+
 export interface Issue extends Dict<any> {
 
 }
