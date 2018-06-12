@@ -11,6 +11,7 @@ import {
 } from './types';
 import { URL } from 'url';
 import https from 'https';
+import { Generator } from './generator';
 
 export class Jira {
   private url: URL;
@@ -51,7 +52,7 @@ export class Jira {
         auth,
         method,
       };
-      // console.log(options, url.toJSON());
+      console.log(options, url.toJSON());
 
       const req = https.request(options, res => {
         res.on('data', buffer => resolve({
@@ -124,6 +125,15 @@ export class Jira {
       // TODO orderBy, expand https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-comment-get
     });
     return res.status === 200 ? res.data : undefined;
+  }
+
+  searchIssuesGenerator(jql: string, config: SearchIssuesConfig = {}): Generator {
+    return new Generator(this, {
+      fn: this.searchIssuesPage,
+      args: [jql, config],
+      key: 'issues',
+      pageSize: 100,
+    });
   }
 
   async searchIssuesPage(jql: string, config: SearchIssuesConfig = {}, page: Page = {}): Promise<Dict<any>> {
