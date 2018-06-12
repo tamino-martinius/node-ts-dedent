@@ -10,13 +10,16 @@ jest.mock('https');
 let responseStatus: number = 902;
 let responseBody: Dict<any> = {};
 let requestString: string = '';
+let curlString: string = '';
 
 const requestMock = function (options, cb) {
-  requestString += `${options.method} ${options.protocol}//`;
-  if (options.auth) requestString += `${options.auth}@`;
-  requestString += options.hostname;
-  if (options.port) requestString += `:${options.port}`;
-  requestString += options.path;
+  let url = `${options.protocol}//`;
+  if (options.auth) url += `${options.auth}@`;
+  url += options.hostname;
+  if (options.port) url += `:${options.port}`;
+  url += options.path;
+  curlString += `curl --request ${options.method} --url '${url}' --header 'Content-Type: application/json' --header 'Accept: application/json'`;
+  requestString = `${options.method} ${url}`
   const callbacks: Dict<any> = {};
   cb({
     on(event, cb) {
@@ -26,6 +29,7 @@ const requestMock = function (options, cb) {
   })
   this.write = (str) => {
     requestString += `\n${str}`;
+    curlString += ` --data '${str}'`;
   };
   this.end = () => {
     if (callbacks.data) {
@@ -42,6 +46,7 @@ beforeEach(() => {
   responseStatus = 902;
   responseBody = {};
   requestString = '';
+  curlString = '';
 });
 
 describe('Jira', () => {
