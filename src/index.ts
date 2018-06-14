@@ -1,4 +1,4 @@
-export function dedent(templ: TemplateStringsArray | string, ...values: any[]) {
+export function dedent(templ: TemplateStringsArray | string, ...values: any[]): string {
   let strings = Array.from(typeof templ === 'string' ? [templ] : templ.raw);
 
   // 1. Remove trailing whitespace.
