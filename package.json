@@ -18,11 +18,11 @@
   "keywords": [
     "dedent",
     "deindent",
-		"indentation",
+    "indentation",
     "multi-line string",
-		"multiline strings",
-		"template literals",
-		"template strings",
+    "multiline strings",
+    "template literals",
+    "template strings",
     "ts",
     "typescript",
     "es6",
@@ -40,8 +40,9 @@
     "preversion": "npm run compile && git add ."
   },
   "devDependencies": {
-    "@types/jest": "^23.0.0",
+    "@types/jest": "^23.1.0",
     "@types/node": "^10.3.2",
+    "codecov": "^3.0.2",
     "jest": "^23.1.0",
     "ts-jest": "^22.4.6",
     "typescript": "^2.9.1"
