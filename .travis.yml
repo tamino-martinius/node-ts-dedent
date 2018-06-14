@@ -15,9 +15,9 @@ node_js:
 script:
   - npm run ci
 
-# matrix:
-#   allow_failures:
-#     - node_js: 'iojs'
-#     - node_js: '4.3.2'
-#     - node_js: '4'
-#     - node_js: '5'
+matrix:
+  allow_failures:
+    - node_js: 'iojs'
+    - node_js: '4.3.2'
+    - node_js: '4'
+    - node_js: '5'
