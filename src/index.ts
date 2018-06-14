@@ -5,13 +5,16 @@ export function dedent(templ: TemplateStringsArray | string, ...values: any[]): 
   strings[strings.length - 1] = strings[strings.length - 1].replace(/\r?\n([\t ]*)$/, '');
 
   // 2. Find all line breaks to determine the highest common indentation level.
-  const indentLengths = strings.reduce((arr, str) => {
-    const matches = str.match(/\n[\t ]+/g);
-    if (matches) {
-      return arr.concat(matches.map(match => match.length - 1));
-    }
-    return arr;
-  }, <number[]>[]);
+  const indentLengths = strings.reduce(
+    (arr, str) => {
+      const matches = str.match(/\n[\t ]+/g);
+      if (matches) {
+        return arr.concat(matches.map(match => match.length - 1));
+      }
+      return arr;
+    },
+    <number[]>[],
+  );
 
   // 3. Remove the common indentation from all strings.
   if (indentLengths.length) {
