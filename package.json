@@ -1,7 +1,7 @@
 {
-  "name": "jira-api-v2",
+  "name": "ts-dedent",
   "version": "1.0.0-alpha.1",
-  "description": "A node wrapper for Jira REST API v2 with minimal dependencies.",
+  "description": "TypeScript package which smartly trims and strips indentation from multi-line strings",
   "author": "Tamino Martinius <dev@zaku.eu>",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,8 +13,21 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tamino-martinius/node-jira-api-v2.git"
+    "url": "https://github.com/tamino-martinius/node-ts-dedent.git"
   },
+  "keywords": [
+    "dedent",
+    "deindent",
+		"indentation",
+    "multi-line string",
+		"multiline strings",
+		"template literals",
+		"template strings",
+    "ts",
+    "typescript",
+    "es6",
+    "harmony"
+  ],
   "engines": {
     "node": ">=6.10"
   },
