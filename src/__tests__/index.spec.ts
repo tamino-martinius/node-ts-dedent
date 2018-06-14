@@ -1,6 +1,4 @@
-import { context } from './types';
-
-import dedent from '../dedent';
+import dedent from '..';
 
 function tag(strings, ...values) {
   let string = strings[0];
