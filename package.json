@@ -1,6 +1,6 @@
 {
   "name": "ts-dedent",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0",
   "description": "TypeScript package which smartly trims and strips indentation from multi-line strings",
   "author": "Tamino Martinius <dev@zaku.eu>",
   "main": "./dist/index.js",
