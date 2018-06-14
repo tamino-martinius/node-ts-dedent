@@ -29,9 +29,9 @@ export function dedent(templ: TemplateStringsArray | string, ...values: any[]): 
   // 5. Perform interpolation.
   let string = strings[0];
 
-  for (let i = 0; i < values.length; i++) {
-    string += values[i] + strings[i + 1];
-  }
+  values.forEach((value, i) => {
+    string += value + strings[i + 1];
+  });
 
   return string;
 }
