@@ -1,7 +1,94 @@
-# Jira API v2
+# TypeScript Dedent
+
+TypeScript package which smartly trims and strips indentation from multi-line strings.
+
+## Usage
+
+```js
+import dedent from 'dedent';
+
+console.log(dedent`A string that gets so long you need to break it over
+                    multiple lines. Luckily dedent is here to keep it
+                    readable without lots of spaces ending up in the string
+                    itself.`
+);
+
+console.log(dedent`
+  A string that gets so long you need to break it over
+  multiple lines. Luckily dedent is here to keep it
+  readable without lots of spaces ending up in the string
+  itself.
+`);
+```
+
+```txt
+A string that gets so long you need to break it over
+multiple lines. Luckily dedent is here to keep it
+readable without lots of spaces ending up in the string
+itself.
+```
+
+```js
+console.log(dedent`
+  Leading and trailing lines will be trimmed, so you can write something like
+  this and have it work as you expect:
+
+    * how convenient it is
+    * that I can use an indented list
+        - and still have it do the right thing
+
+  That's all.
+`);
+```
+
+```txt
+Leading and trailing lines will be trimmed, so you can write something like
+this and have it work as you expect:
+
+  * how convenient it is
+  * that I can use an indented list
+    - and still have it do the right thing
+
+That's all.
+```
+
+```js
+console.log(dedent`
+  Also works fine
+
+  ${1}. With any kind of
+  ${2}. Placeholders
+`);
+```
+
+```txt
+Also works fine
+
+1. With any kind of
+2. Placeholders
+```
+
+```js
+console.log(dedent(`
+  Wait! I lied. Dedent can also be used as a function.
+`);
+```
+
+```txt
+Wait! I lied. Dedent can also be used as a function.
+```
+
+## License
+
+MIT
+
+## Based on
+
+* [https://www.npmjs.com/package/dedent](dedent) by ~dmnd
+* [https://www.npmjs.com/package/js-dedent](js-dedent) by ~martin-kolarik
 
 ## Changelog
 
 See [history](HISTORY.md) for more details.
 
-* `1.0.0` **2018-xx-xx** Initial release
+* `1.0.0` **2018-06-14** Initial release
