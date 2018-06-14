@@ -5,7 +5,7 @@
 
 TypeScript package which smartly trims and strips indentation from multi-line strings.
 
-## Usage
+## Usage Examples
 
 ```js
 import dedent from 'dedent';
@@ -31,6 +31,8 @@ readable without lots of spaces ending up in the string
 itself.
 ```
 
+---
+
 ```js
 console.log(dedent`
   Leading and trailing lines will be trimmed, so you can write something like
@@ -55,6 +57,8 @@ this and have it work as you expect:
 That's all.
 ```
 
+---
+
 ```js
 console.log(dedent`
   Also works fine
@@ -70,6 +74,8 @@ Also works fine
 1. With any kind of
 2. Placeholders
 ```
+
+---
 
 ```js
 console.log(dedent(`
