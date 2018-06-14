@@ -1,11 +1,11 @@
-import dedent from '..';
+import { dedent } from '..';
 
 function tag(strings, ...values) {
   let string = strings[0];
 
-  for (let i = 0; i < values.length; i++) {
-    string += 2 * values[i] + strings[i + 1];
-  }
+  values.forEach((value, i) => {
+    string += 2 * value + strings[i + 1];
+  });
 
   return string;
 }
@@ -49,7 +49,7 @@ describe('dedent tag', () => {
 			Line #1
 			Line #2
 			Line #3
-			`
+			`,
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -57,7 +57,7 @@ describe('dedent tag', () => {
 			Line #${1}
 			Line #${2}
 			Line #${3}
-			`
+			`,
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -65,7 +65,7 @@ describe('dedent tag', () => {
 			${1}. line #${1}
 			${2}. line #${2}
 			${3}. line
-			`
+			`,
     ).toEqual('1. line #1\n2. line #2\n3. line');
   });
 
@@ -77,7 +77,7 @@ describe('dedent tag', () => {
 			Line #2
 			Line #3
 
-			`
+			`,
     ).toEqual('\nLine #1\nLine #2\nLine #3\n');
 
     expect(
@@ -87,7 +87,7 @@ describe('dedent tag', () => {
 			Line #${2}
 			Line #${3}
 
-			`
+			`,
     ).toEqual('\nLine #1\nLine #2\nLine #3\n');
 
     expect(
@@ -97,7 +97,7 @@ describe('dedent tag', () => {
 			${2}. line #${2}
 			${3}. line
 
-			`
+			`,
     ).toEqual('\n1. line #1\n2. line #2\n3. line\n');
   });
 
@@ -107,7 +107,7 @@ describe('dedent tag', () => {
 			Line #1
 				Line #2
 					Line #3
-			`
+			`,
     ).toEqual('Line #1\n\tLine #2\n\t\tLine #3');
 
     expect(
@@ -115,7 +115,7 @@ describe('dedent tag', () => {
 			Line #${1}
 				Line #${2}
 					Line #${3}
-			`
+			`,
     ).toEqual('Line #1\n\tLine #2\n\t\tLine #3');
 
     expect(
@@ -123,7 +123,7 @@ describe('dedent tag', () => {
 			${1}. line #${1}
 				${2}. line #${2}
 					${3}. line
-			`
+			`,
     ).toEqual('1. line #1\n\t2. line #2\n\t\t3. line');
   });
 
@@ -135,7 +135,7 @@ describe('dedent tag', () => {
 					Line #2
 					Line #3
 				`;
-      }()
+      }(),
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -145,7 +145,7 @@ describe('dedent tag', () => {
 					Line #${2}
 					Line #${3}
 				`;
-      }()
+      }(),
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -155,7 +155,7 @@ describe('dedent tag', () => {
 					${2}. line #${2}
 					${3}. line
 				`;
-      }()
+      }(),
     ).toEqual('1. line #1\n2. line #2\n3. line');
   });
 });
@@ -195,7 +195,7 @@ describe('dedent() function', () => {
 			Line #1
 			Line #2
 			Line #3
-			`)
+			`),
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -203,7 +203,7 @@ describe('dedent() function', () => {
 			Line #${1}
 			Line #${2}
 			Line #${3}
-			`)
+			`),
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -211,7 +211,7 @@ describe('dedent() function', () => {
 			${1}. line #${1}
 			${2}. line #${2}
 			${3}. line
-			`)
+			`),
     ).toEqual('1. line #1\n2. line #2\n3. line');
   });
 
@@ -223,7 +223,7 @@ describe('dedent() function', () => {
 			Line #2
 			Line #3
 
-			`)
+			`),
     ).toEqual('\nLine #1\nLine #2\nLine #3\n');
 
     expect(
@@ -233,7 +233,7 @@ describe('dedent() function', () => {
 			Line #${2}
 			Line #${3}
 
-			`)
+			`),
     ).toEqual('\nLine #1\nLine #2\nLine #3\n');
 
     expect(
@@ -243,7 +243,7 @@ describe('dedent() function', () => {
 			${2}. line #${2}
 			${3}. line
 
-			`)
+			`),
     ).toEqual('\n1. line #1\n2. line #2\n3. line\n');
   });
 
@@ -253,7 +253,7 @@ describe('dedent() function', () => {
 			Line #1
 				Line #2
 					Line #3
-			`)
+			`),
     ).toEqual('Line #1\n\tLine #2\n\t\tLine #3');
 
     expect(
@@ -261,7 +261,7 @@ describe('dedent() function', () => {
 			Line #${1}
 				Line #${2}
 					Line #${3}
-			`)
+			`),
     ).toEqual('Line #1\n\tLine #2\n\t\tLine #3');
 
     expect(
@@ -269,7 +269,7 @@ describe('dedent() function', () => {
 			${1}. line #${1}
 				${2}. line #${2}
 					${3}. line
-			`)
+			`),
     ).toEqual('1. line #1\n\t2. line #2\n\t\t3. line');
   });
 
@@ -281,7 +281,7 @@ describe('dedent() function', () => {
 					Line #2
 					Line #3
 				`);
-      }()
+      }(),
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -291,7 +291,7 @@ describe('dedent() function', () => {
 					Line #${2}
 					Line #${3}
 				`);
-      }()
+      }(),
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -301,7 +301,7 @@ describe('dedent() function', () => {
 					${2}. line #${2}
 					${3}. line
 				`);
-      }()
+      }(),
     ).toEqual('1. line #1\n2. line #2\n3. line');
   });
 });
@@ -341,7 +341,7 @@ describe('dedent() function with custom tag', () => {
 			Line #1
 			Line #2
 			Line #3
-			`)
+			`),
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -349,7 +349,7 @@ describe('dedent() function with custom tag', () => {
 			Line #${1}
 			Line #${2}
 			Line #${3}
-			`)
+			`),
     ).toEqual('Line #2\nLine #4\nLine #6');
 
     expect(
@@ -357,7 +357,7 @@ describe('dedent() function with custom tag', () => {
 			${1}. line #${1}
 			${2}. line #${2}
 			${3}. line
-			`)
+			`),
     ).toEqual('2. line #2\n4. line #4\n6. line');
   });
 
@@ -369,7 +369,7 @@ describe('dedent() function with custom tag', () => {
 			Line #2
 			Line #3
 
-			`)
+			`),
     ).toEqual('\nLine #1\nLine #2\nLine #3\n');
 
     expect(
@@ -379,7 +379,7 @@ describe('dedent() function with custom tag', () => {
 			Line #${2}
 			Line #${3}
 
-			`)
+			`),
     ).toEqual('\nLine #2\nLine #4\nLine #6\n');
 
     expect(
@@ -389,7 +389,7 @@ describe('dedent() function with custom tag', () => {
 			${2}. line #${2}
 			${3}. line
 
-			`)
+			`),
     ).toEqual('\n2. line #2\n4. line #4\n6. line\n');
   });
 
@@ -399,7 +399,7 @@ describe('dedent() function with custom tag', () => {
 			Line #1
 				Line #2
 					Line #3
-			`)
+			`),
     ).toEqual('Line #1\n\tLine #2\n\t\tLine #3');
 
     expect(
@@ -407,7 +407,7 @@ describe('dedent() function with custom tag', () => {
 			Line #${1}
 				Line #${2}
 					Line #${3}
-			`)
+			`),
     ).toEqual('Line #2\n\tLine #4\n\t\tLine #6');
 
     expect(
@@ -415,7 +415,7 @@ describe('dedent() function with custom tag', () => {
 			${1}. line #${1}
 				${2}. line #${2}
 					${3}. line
-			`)
+			`),
     ).toEqual('2. line #2\n\t4. line #4\n\t\t6. line');
   });
 
@@ -427,7 +427,7 @@ describe('dedent() function with custom tag', () => {
 					Line #2
 					Line #3
 				`);
-      }()
+      }(),
     ).toEqual('Line #1\nLine #2\nLine #3');
 
     expect(
@@ -437,7 +437,7 @@ describe('dedent() function with custom tag', () => {
 					Line #${2}
 					Line #${3}
 				`);
-      }()
+      }(),
     ).toEqual('Line #2\nLine #4\nLine #6');
 
     expect(
@@ -447,7 +447,7 @@ describe('dedent() function with custom tag', () => {
 					${2}. line #${2}
 					${3}. line
 				`);
-      }()
+      }(),
     ).toEqual('2. line #2\n4. line #4\n6. line');
   });
 });
