@@ -15,14 +15,6 @@ function tag(strings, ...values) {
 describe('dedent tag', () => {
   it('should work with empty string', () => {
     expect(dedent``).toEqual('');
-
-    expect(dedent`Line #${1}
-			Line #${2}
-			Line #${3}`).toEqual('Line #1\nLine #2\nLine #3');
-
-    expect(dedent`${1}. line #${1}
-			${2}. line #${2}
-			${3}. line`).toEqual('1. line #1\n2. line #2\n3. line');
   });
 
   it('should work with tabs', () => {
