@@ -85,7 +85,7 @@ MIT
 ## Based on
 
 * [https://www.npmjs.com/package/dedent](dedent) by ~dmnd
-* [https://www.npmjs.com/package/js-dedent](js-dedent) by ~martin-kolarik
+* [https://www.npmjs.com/package/dedent-js](dedent-js) by ~martin-kolarik
 
 ## Changelog
 
