@@ -93,8 +93,8 @@ MIT
 
 ## Based on
 
-* [https://www.npmjs.com/package/dedent](dedent) by ~dmnd
-* [https://www.npmjs.com/package/dedent-js](dedent-js) by ~martin-kolarik
+- [dedent](https://www.npmjs.com/package/dedent) by ~dmnd
+- [dedent-js](https://www.npmjs.com/package/dedent-js) by ~martin-kolarik
 
 ## Changelog
 
