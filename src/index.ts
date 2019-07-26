@@ -1,8 +1,14 @@
-export function dedent(templ: TemplateStringsArray | string, ...values: any[]): string {
+export function dedent(
+  templ: TemplateStringsArray | string,
+  ...values: any[]
+): string {
   let strings = Array.from(typeof templ === 'string' ? [templ] : templ.raw);
 
   // 1. Remove trailing whitespace.
-  strings[strings.length - 1] = strings[strings.length - 1].replace(/\r?\n([\t ]*)$/, '');
+  strings[strings.length - 1] = strings[strings.length - 1].replace(
+    /\r?\n([\t ]*)$/,
+    '',
+  );
 
   // 2. Find all line breaks to determine the highest common indentation level.
   const indentLengths = strings.reduce(
