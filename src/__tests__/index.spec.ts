@@ -1,6 +1,6 @@
 import { dedent } from '..';
 
-function tag(strings, ...values) {
+function tag(strings: TemplateStringsArray, ...values: number[]) {
   let string = strings[0];
 
   values.forEach((value, i) => {
