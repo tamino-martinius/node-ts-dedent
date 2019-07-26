@@ -13,8 +13,7 @@ import dedent from 'dedent';
 console.log(dedent`A string that gets so long you need to break it over
                     multiple lines. Luckily dedent is here to keep it
                     readable without lots of spaces ending up in the string
-                    itself.`
-);
+                    itself.`);
 
 console.log(dedent`
   A string that gets so long you need to break it over
@@ -100,4 +99,5 @@ MIT
 
 See [history](HISTORY.md) for more details.
 
-* `1.0.0` **2018-06-14** Initial release
+- `1.1.0` **2019-07-26** Updated dependencies and fixed links in readme
+- `1.0.0` **2018-06-14** Initial release
