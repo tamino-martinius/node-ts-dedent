@@ -29,7 +29,8 @@
   "exclude": [
     "node_modules",
     "*/__tests__",
-    "*/__mocks__"
+    "*/__mocks__",
+    "dist"
   ],
   "jest": {
     "globals": {
