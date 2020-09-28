@@ -99,5 +99,6 @@ MIT
 
 See [history](HISTORY.md) for more details.
 
+- `1.2.0` **2020-09-28** Updated dependencies and a couple of minor improvments
 - `1.1.0` **2019-07-26** Updated dependencies and fixed links in readme
 - `1.0.0` **2018-06-14** Initial release
