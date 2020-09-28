@@ -1,15 +1,20 @@
 language: node_js
 node_js:
   - '6'
-  - '6.10.3' # AWS Lambda
-  - '6.11.2' # Azure functions
-  - '6.14.0' # Google cloud functions
+  - '6.10.3' # AWS Lambda (outdated)
+  - '6.11.2' # Azure functions (outdated)
+  - '6.14.0' # Google cloud functions (outdated)
   - '7'
   - '8'
   - '8.9.4' # Azure functions
-  - '8.10' # AWS Lambda
+  - '8.10' # AWS Lambda (outdated)
   - '9'
   - '10'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
   - 'node'
+  - 'lts/*'
 script:
   - npm run ci
