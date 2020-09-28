@@ -8,8 +8,8 @@ TBA
 
 Fixes #4
 
-- ! Might break/change existing behaviour
-- If a line does not start with whitespace don't remove indentation
+- ! Might break/change existing behavior
+- If a line does not start with whitespace don't remove the indentation
 
 ## v1.2.0
 
