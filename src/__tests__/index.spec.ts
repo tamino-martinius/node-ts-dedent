@@ -54,11 +54,27 @@ describe('dedent tag', () => {
 
     expect(
       dedent`
+Line #1
+	Line #2
+	Line #3
+			`,
+    ).toEqual('Line #1\n\tLine #2\n\tLine #3');
+
+    expect(
+      dedent`
 			Line #${1}
 			Line #${2}
 			Line #${3}
 			`,
     ).toEqual('Line #1\nLine #2\nLine #3');
+
+    expect(
+      dedent`
+Line #${1}
+	Line #${2}
+	Line #${3}
+			`,
+    ).toEqual('Line #1\n\tLine #2\n\tLine #3');
 
     expect(
       dedent`
@@ -212,11 +228,27 @@ describe('dedent() function', () => {
 
     expect(
       dedent(`
+Line #1
+	Line #2
+	Line #3
+			`),
+    ).toEqual('Line #1\n\tLine #2\n\tLine #3');
+
+    expect(
+      dedent(`
 			Line #${1}
 			Line #${2}
 			Line #${3}
 			`),
     ).toEqual('Line #1\nLine #2\nLine #3');
+
+    expect(
+      dedent(`
+Line #${1}
+	Line #${2}
+	Line #${3}
+			`),
+    ).toEqual('Line #1\n\tLine #2\n\tLine #3');
 
     expect(
       dedent(`
@@ -370,11 +402,27 @@ describe('dedent() function with custom tag', () => {
 
     expect(
       dedent(tag`
+Line #1
+	Line #2
+	Line #3
+			`),
+    ).toEqual('Line #1\n\tLine #2\n\tLine #3');
+
+    expect(
+      dedent(tag`
 			Line #${1}
 			Line #${2}
 			Line #${3}
 			`),
     ).toEqual('Line #2\nLine #4\nLine #6');
+
+    expect(
+      dedent(tag`
+Line #${1}
+	Line #${2}
+	Line #${3}
+			`),
+    ).toEqual('Line #2\n\tLine #4\n\tLine #6');
 
     expect(
       dedent(tag`

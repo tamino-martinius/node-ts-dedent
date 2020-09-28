@@ -9,9 +9,9 @@ function dedent(templ) {
     var strings = Array.from(typeof templ === 'string' ? [templ] : templ.raw);
     strings[strings.length - 1] = strings[strings.length - 1].replace(/\r?\n([\t ]*)$/, '');
     var indentLengths = strings.reduce(function (arr, str) {
-        var matches = str.match(/\n[\t ]+/g);
+        var matches = str.match(/\n([\t ]+|(?!\s).)/g);
         if (matches) {
-            return arr.concat(matches.map(function (match) { return match.length - 1; }));
+            return arr.concat(matches.map(function (match) { var _a, _b; return (_b = (_a = match.match(/[\t ]/g)) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0; }));
         }
         return arr;
     }, []);

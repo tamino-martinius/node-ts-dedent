@@ -11,22 +11,21 @@ export function dedent(
   );
 
   // 2. Find all line breaks to determine the highest common indentation level.
-  const indentLengths = strings.reduce(
-    (arr, str) => {
-      const matches = str.match(/\n[\t ]+/g);
-      if (matches) {
-        return arr.concat(matches.map(match => match.length - 1));
-      }
-      return arr;
-    },
-    <number[]>[],
-  );
+  const indentLengths = strings.reduce((arr, str) => {
+    const matches = str.match(/\n([\t ]+|(?!\s).)/g);
+    if (matches) {
+      return arr.concat(
+        matches.map((match) => match.match(/[\t ]/g)?.length ?? 0),
+      );
+    }
+    return arr;
+  }, <number[]>[]);
 
   // 3. Remove the common indentation from all strings.
   if (indentLengths.length) {
     const pattern = new RegExp(`\n[\t ]{${Math.min(...indentLengths)}}`, 'g');
 
-    strings = strings.map(str => str.replace(pattern, '\n'));
+    strings = strings.map((str) => str.replace(pattern, '\n'));
   }
 
   // 4. Remove leading whitespace.

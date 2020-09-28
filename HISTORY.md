@@ -4,6 +4,13 @@
 
 TBA
 
+## v2.0.0
+
+Fixes #4
+
+- ! Might break/change existing behavior
+- If a line does not start with whitespace don't remove the indentation
+
 ## v1.2.0
 
 Security update with dependency changes
