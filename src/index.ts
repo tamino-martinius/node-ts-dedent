@@ -1,6 +1,6 @@
 export function dedent(
   templ: TemplateStringsArray | string,
-  ...values: any[]
+  ...values: unknown[]
 ): string {
   let strings = Array.from(typeof templ === 'string' ? [templ] : templ.raw);
 

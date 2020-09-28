@@ -34,7 +34,9 @@
   },
   "scripts": {
     "coverage": "rm -rf coverage* && jest --coverage",
+    "pretest": "npm run lint",
     "test": "jest",
+    "lint": "eslint .",
     "watch": "tsc -w",
     "ci": "npm run coverage && codecov",
     "compile": "rm -rf dist/* && tsc",
@@ -42,12 +44,24 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.14",
-    "@types/node": "^14.11.2",
+    "@typescript-eslint/eslint-plugin": "^4.2.0",
+    "@typescript-eslint/parser": "^4.2.0",
     "codecov": "^3.7.2",
+    "eslint": "^7.10.0",
     "jest": "^26.4.2",
     "ts-jest": "^26.4.0",
-    "tslint": "^6.1.3",
-    "tslint-config-airbnb": "^5.11.2",
-    "typescript": "^4.0.3"
+    "typescript": "~4.0.3"
+  },
+  "jest": {
+    "transform": {
+      ".ts": "ts-jest"
+    },
+    "testRegex": "\\.(test|spec)\\.ts$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json"
+    ]
   }
 }

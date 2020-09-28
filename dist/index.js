@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.dedent = void 0;
 function dedent(templ) {
     var values = [];
     for (var _i = 1; _i < arguments.length; _i++) {

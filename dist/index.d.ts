@@ -1,2 +1,2 @@
-export declare function dedent(templ: TemplateStringsArray | string, ...values: any[]): string;
+export declare function dedent(templ: TemplateStringsArray | string, ...values: unknown[]): string;
 export default dedent;
