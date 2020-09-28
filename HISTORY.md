@@ -2,6 +2,10 @@
 
 ## vNext
 
+TBA
+
+## v1.2.0
+
 Security update with dependency changes
 
 - Updated all dependencies to their latest version
