@@ -4,6 +4,8 @@
 
 TBA
 
+- Correctly handle escape sequences when used as a tag
+
 ## v2.0.0
 
 Fixes #4
