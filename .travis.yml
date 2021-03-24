@@ -10,16 +10,17 @@ node_js:
   - 'lts/*'
 
 env:
-  - SCRIPT=code_coverage
   - SCRIPT=unit_tests
   - SCRIPT=test_build
 
 script:
-  # Code Coverage
-  - if [ $SCRIPT == "code_coverage" ]; then npm run ci; fi
-
   # Unit Tests
   - if [ $SCRIPT == "unit_tests" ]; then npm run test; fi
 
   # Test Build
   - if [ $SCRIPT == "test_build" ]; then npm run compile; fi
+
+jobs:
+  include:
+    - name: Code Coverage
+      script: npm run ci
