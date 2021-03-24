@@ -2,7 +2,7 @@ export function dedent(
   templ: TemplateStringsArray | string,
   ...values: unknown[]
 ): string {
-  let strings = Array.from(typeof templ === 'string' ? [templ] : templ.raw);
+  let strings = Array.from(typeof templ === 'string' ? [templ] : templ);
 
   // 1. Remove trailing whitespace.
   strings[strings.length - 1] = strings[strings.length - 1].replace(

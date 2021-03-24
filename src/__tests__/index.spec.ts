@@ -174,6 +174,17 @@ Line #${1}
       })(),
     ).toEqual('1. line #1\n2. line #2\n3. line');
   });
+
+  it("should process escape sequences", () => {
+    expect(
+      (() => {
+        return dedent`
+          \${not interpolated}
+          \`
+        `;
+      })(),
+    ).toEqual('${not interpolated}\n`');
+  });
 });
 
 describe('dedent() function', () => {
@@ -348,6 +359,15 @@ Line #${1}
       })(),
     ).toEqual('1. line #1\n2. line #2\n3. line');
   });
+
+  it("should process escape sequences", () => {
+    expect(
+      dedent(`
+          \${not interpolated}
+          \`
+        `),
+    ).toEqual('${not interpolated}\n`');
+  });
 });
 
 describe('dedent() function with custom tag', () => {
@@ -521,5 +541,14 @@ Line #${1}
 				`);
       })(),
     ).toEqual('2. line #2\n4. line #4\n6. line');
+  });
+
+  it("should process escape sequences", () => {
+    expect(
+      dedent(tag`
+          \${not interpolated}
+          \`
+        `),
+    ).toEqual('${not interpolated}\n`');
   });
 });
