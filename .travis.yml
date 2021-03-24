@@ -16,16 +16,16 @@ env:
 
 script:
   # Code Coverage
-  - if [[ $SCRIPT -eq "code_coverage" ]]; then
+  - if [[ $SCRIPT == "code_coverage" ]]; then
     npm run ci
     fi
 
   # Unit Tests
-  - if [[ $SCRIPT -eq "unit_tests" ]]; then
+  - if [[ $SCRIPT == "unit_tests" ]]; then
     npm run test
     fi
 
   # Test Build
-  - if [[ $SCRIPT -eq "test_build" ]]; then
+  - if [[ $SCRIPT == "test_build" ]]; then
     npm run compile
     fi
