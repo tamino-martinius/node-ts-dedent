@@ -4,7 +4,11 @@
 
 TBA
 
+## v2.1.0
+
 - Correctly handle escape sequences when used as a tag
+- Add test build to CI
+- Only run coverage once per change
 
 ## v2.0.0
 
