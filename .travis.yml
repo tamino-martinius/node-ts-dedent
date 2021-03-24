@@ -8,5 +8,19 @@ node_js:
   - '14'
   - 'node'
   - 'lts/*'
+
+env:
+  - SCRIPT=unit_tests
+  - SCRIPT=test_build
+
 script:
-  - npm run ci
+  # Unit Tests
+  - if [ $SCRIPT == "unit_tests" ]; then npm run test; fi
+
+  # Test Build
+  - if [ $SCRIPT == "test_build" ]; then npm run compile; fi
+
+jobs:
+  include:
+    - name: Code Coverage
+      script: npm run ci
