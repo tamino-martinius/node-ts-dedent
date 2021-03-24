@@ -10,3 +10,12 @@ node_js:
   - 'lts/*'
 script:
   - npm run ci
+jobs:
+  include:
+    - stage: Tests
+      name: Code Coverage
+      script: npm run ci
+    - name: Unit Tests
+      script: npm run test
+    - name: Test Build
+      script: npm run compile
