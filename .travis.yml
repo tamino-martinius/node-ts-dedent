@@ -8,14 +8,24 @@ node_js:
   - '14'
   - 'node'
   - 'lts/*'
+
+env:
+  - SCRIPT=code_coverage
+  - SCRIPT=unit_tests
+  - SCRIPT=test_build
+
 script:
-  - npm run ci
-jobs:
-  include:
-    - stage: Tests
-      name: Code Coverage
-      script: npm run ci
-    - name: Unit Tests
-      script: npm run test
-    - name: Test Build
-      script: npm run compile
+  # Code Coverage
+  - if [[ $SCRIPT -eq "code_coverage" ]]; then
+    npm run ci
+    fi
+
+  # Unit Tests
+  - if [[ $SCRIPT -eq "unit_tests" ]]; then
+    npm run test
+    fi
+
+  # Test Build
+  - if [[ $SCRIPT -eq "test_build" ]]; then
+    npm run compile
+    fi
