@@ -6,7 +6,7 @@ function dedent(templ) {
     for (var _i = 1; _i < arguments.length; _i++) {
         values[_i - 1] = arguments[_i];
     }
-    var strings = Array.from(typeof templ === 'string' ? [templ] : templ.raw);
+    var strings = Array.from(typeof templ === 'string' ? [templ] : templ);
     strings[strings.length - 1] = strings[strings.length - 1].replace(/\r?\n([\t ]*)$/, '');
     var indentLengths = strings.reduce(function (arr, str) {
         var matches = str.match(/\n([\t ]+|(?!\s).)/g);
