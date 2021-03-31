@@ -4,6 +4,13 @@
 
 TBA
 
+## v2.1.1
+
+Security update with dependency changes
+
+- Updated all dependencies to their latest version
+- Updated CI settings (added node 15)
+
 ## v2.1.0
 
 - Correctly handle escape sequences when used as a tag
