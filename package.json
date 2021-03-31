@@ -4,12 +4,13 @@
   "description": "TypeScript package which smartly trims and strips indentation from multi-line strings",
   "author": "Tamino Martinius <dev@zaku.eu>",
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "module": "./esm/index.js",
   "jsnext:main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "license": "MIT",
   "files": [
     "dist",
+    "esm",
     "src"
   ],
   "repository": {
@@ -39,7 +40,7 @@
     "lint": "eslint .",
     "watch": "tsc -w",
     "ci": "npm run coverage && codecov",
-    "compile": "rm -rf dist/* && tsc",
+    "compile": "rm -rf dist/* && rm -rf esm/* && tsc --module commonjs --outdir dist && tsc --module es6 --outdir esm",
     "preversion": "npm run compile && git add ."
   },
   "devDependencies": {
