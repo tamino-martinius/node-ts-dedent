@@ -35,7 +35,21 @@ export function dedent(
   let string = strings[0];
 
   values.forEach((value, i) => {
-    string += value + strings[i + 1];
+    // 5.1 Read current indentation level
+    const endentations = string.match(/(?:^|\n)( *)$/)
+    const endentation = endentations ? endentations[1] : ''
+    let indentedValue = value
+    // 5.2 Add indentation to values with multiline strings
+    if (typeof value === 'string' && value.includes('\n')) {
+      indentedValue = String(value)
+        .split('\n')
+        .map((str, i) => {
+          return i === 0 ? str : `${endentation}${str}`
+        })
+        .join('\n');
+    }
+
+    string += indentedValue + strings[i + 1];
   });
 
   return string;
