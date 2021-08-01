@@ -98,6 +98,7 @@ MIT
 
 See [history](HISTORY.md) for more details.
 
+- `2.2.0` **2021-08-01** Add indentation to values with multiline strings & added ESM module
 - `2.1.1` **2021-03-31** Update dependencies
 - `2.1.0` **2021-03-24** Bugfixes
 - `2.0.0` **2020-09-28** Bugfixes

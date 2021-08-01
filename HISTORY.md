@@ -4,6 +4,14 @@
 
 TBA
 
+## v2.2.0
+
+Add indentation to values with multiline strings & added ESM module
+
+- Updated all dependencies to their latest version
+- Updated CI settings (added node 16, multiple os platforms)
+- Moved from Travis CI to Github Actions
+
 ## v2.1.1
 
 Security update with dependency changes
