@@ -22,7 +22,18 @@ function dedent(templ) {
     strings[0] = strings[0].replace(/^\r?\n/, '');
     var string = strings[0];
     values.forEach(function (value, i) {
-        string += value + strings[i + 1];
+        var endentations = string.match(/(?:^|\n)( *)$/);
+        var endentation = endentations ? endentations[1] : '';
+        var indentedValue = value;
+        if (typeof value === 'string' && value.includes('\n')) {
+            indentedValue = String(value)
+                .split('\n')
+                .map(function (str, i) {
+                return i === 0 ? str : "" + endentation + str;
+            })
+                .join('\n');
+        }
+        string += indentedValue + strings[i + 1];
     });
     return string;
 }
