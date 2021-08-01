@@ -1,6 +1,5 @@
 # TypeScript Dedent
 
-[![Build Status](https://travis-ci.org/tamino-martinius/node-ts-dedent.svg?branch=master)](https://travis-ci.org/tamino-martinius/node-ts-dedent)
 [![codecov](https://codecov.io/gh/tamino-martinius/node-ts-dedent/branch/master/graph/badge.svg)](https://codecov.io/gh/tamino-martinius/node-ts-dedent)
 
 TypeScript package which smartly trims and strips indentation from multi-line strings.
