@@ -9,8 +9,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [10.x, 12.x, 14.x, 15.x, 16.x, latest]
-        os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04, ubuntu-latest]
+        node: [10.x, 12.x, 14.x, 15.x, 16.x]
+        os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
 
     steps:
       # Configures the node version used on GitHub-hosted runners
@@ -41,8 +41,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [10.x, 12.x, 14.x, 15.x, 16.x, latest]
-        os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04, ubuntu-latest]
+        node: [10.x, 12.x, 14.x, 15.x, 16.x]
+        os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
 
     steps:
       # Configures the node version used on GitHub-hosted runners
@@ -70,13 +70,13 @@ jobs:
         run: npm run compile
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       # Configures the node version used on GitHub-hosted runners
       - uses: actions/setup-node@v2
         with:
           # The Node.js version to configure
-          node-version: latest
+          node-version: 16.x
       - name: Checkout
         uses: actions/checkout@v2
       - name: Cache node modules
