@@ -7,7 +7,7 @@ TypeScript package which smartly trims and strips indentation from multi-line st
 ## Usage Examples
 
 ```js
-import dedent from 'dedent';
+import { dedent } from 'ts-dedent';
 
 console.log(dedent`A string that gets so long you need to break it over
                     multiple lines. Luckily dedent is here to keep it
