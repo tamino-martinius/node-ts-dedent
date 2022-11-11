@@ -15,6 +15,7 @@ jobs:
             macos-latest,
             windows-latest,
             ubuntu-latest,
+            ubuntu-16.04,
             ubuntu-18.04,
             ubuntu-20.04,
             ubuntu-22.04,
@@ -22,7 +23,7 @@ jobs:
 
     steps:
       # Configures the node version used on GitHub-hosted runners
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           # The Node.js version to configure
           node-version: ${{ matrix.node }}
@@ -55,6 +56,7 @@ jobs:
             macos-latest,
             windows-latest,
             ubuntu-latest,
+            ubuntu-16.04,
             ubuntu-18.04,
             ubuntu-20.04,
             ubuntu-22.04,
@@ -62,7 +64,7 @@ jobs:
 
     steps:
       # Configures the node version used on GitHub-hosted runners
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           # The Node.js version to configure
           node-version: ${{ matrix.node }}
@@ -89,7 +91,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       # Configures the node version used on GitHub-hosted runners
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           # The Node.js version to configure
           node-version: 18.x
