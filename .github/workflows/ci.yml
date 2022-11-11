@@ -10,15 +10,14 @@ jobs:
     strategy:
       matrix:
         node: [16.x, 18.x, lts/*]
-        os:
-          [
+        os: [
             macos-latest,
             windows-latest,
             ubuntu-latest,
-            ubuntu-16.04,
-            ubuntu-18.04,
-            ubuntu-20.04,
-            ubuntu-22.04,
+            # ubuntu-16.04,
+            # ubuntu-18.04,
+            # ubuntu-20.04,
+            # ubuntu-22.04,
           ]
 
     steps:
@@ -51,15 +50,14 @@ jobs:
     strategy:
       matrix:
         node: [16.x, 18.x, lts/*]
-        os:
-          [
+        os: [
             macos-latest,
             windows-latest,
             ubuntu-latest,
-            ubuntu-16.04,
-            ubuntu-18.04,
-            ubuntu-20.04,
-            ubuntu-22.04,
+            # ubuntu-16.04,
+            # ubuntu-18.04,
+            # ubuntu-20.04,
+            # ubuntu-22.04,
           ]
 
     steps:
@@ -94,7 +92,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           # The Node.js version to configure
-          node-version: 18.x
+          node-version: ubuntu-latest
       - name: Checkout
         uses: actions/checkout@v2
       - name: Cache node modules
