@@ -175,7 +175,7 @@ Line #${1}
     ).toEqual('1. line #1\n2. line #2\n3. line');
   });
 
-  it("should process escape sequences", () => {
+  it('should process escape sequences', () => {
     expect(
       (() => {
         return dedent`
@@ -184,6 +184,47 @@ Line #${1}
         `;
       })(),
     ).toEqual('${not interpolated}\n`');
+  });
+
+  it('should dedent nested dedents correctly', () => {
+    const fieldDocs = dedent`
+      * a
+      * b
+      * c
+    `;
+
+    const a = dedent`
+      /**
+       ${fieldIntro()}
+       *
+       ${fieldDocs}
+       *
+       ${fieldExample()}
+       */
+    `;
+
+    function fieldIntro() {
+      return dedent`
+        * 0
+      `;
+    }
+    function fieldExample() {
+      return dedent`
+        * d
+      `;
+    }
+
+    const expected = `/**
+ * 0
+ *
+ * a
+ * b
+ * c
+ *
+ * d
+ */`;
+
+    expect(a).toEqual(expected);
   });
 });
 
@@ -360,7 +401,7 @@ Line #${1}
     ).toEqual('1. line #1\n2. line #2\n3. line');
   });
 
-  it("should process escape sequences", () => {
+  it('should process escape sequences', () => {
     expect(
       dedent(`
           \${not interpolated}
@@ -543,7 +584,7 @@ Line #${1}
     ).toEqual('2. line #2\n4. line #4\n6. line');
   });
 
-  it("should process escape sequences", () => {
+  it('should process escape sequences', () => {
     expect(
       dedent(tag`
           \${not interpolated}
