@@ -9,19 +9,29 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [10.x, 12.x, 14.x, 15.x, 16.x]
-        os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        node: [
+            lts/*,
+            19.x, # EOL 2023-04-01 / 2023-06-01
+            18.x, # EOL 2023-10-18 / 2025-04-30
+          ]
+        os: [
+            macos-latest,
+            windows-latest,
+            ubuntu-latest,
+            ubuntu-22.04, # EOL 2027-04-21 / 2032-04-01
+            ubuntu-20.04, # EOL 2025-04-02 / 2030-04-01
+          ]
 
     steps:
       # Configures the node version used on GitHub-hosted runners
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           # The Node.js version to configure
           node-version: ${{ matrix.node }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -41,19 +51,29 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [10.x, 12.x, 14.x, 15.x, 16.x]
-        os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        node: [
+            lts/*,
+            19.x, # EOL 2023-04-01 / 2023-06-01
+            18.x, # EOL 2023-10-18 / 2025-04-30
+          ]
+        os: [
+            macos-latest,
+            windows-latest,
+            ubuntu-latest,
+            ubuntu-22.04, # EOL 2027-04-21 / 2032-04-01
+            ubuntu-20.04, # EOL 2025-04-02 / 2030-04-01
+          ]
 
     steps:
       # Configures the node version used on GitHub-hosted runners
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           # The Node.js version to configure
           node-version: ${{ matrix.node }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -70,17 +90,17 @@ jobs:
         run: npm run compile
 
   coverage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Configures the node version used on GitHub-hosted runners
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           # The Node.js version to configure
-          node-version: 16.x
+          node-version: lts/*
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:

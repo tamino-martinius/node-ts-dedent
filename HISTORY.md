@@ -2,7 +2,9 @@
 
 ## vNext
 
-TBA
+- Fixed typo in readme
+- Updated build tools
+- Bumped CI test versions
 
 ## v2.2.0
 
