@@ -2,6 +2,10 @@
 
 ## vNext
 
+TBD
+
+## v2.2.1
+
 - Fixed typo in readme
 - Updated build tools
 - Bumped CI test versions
