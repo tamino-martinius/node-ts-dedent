@@ -39,7 +39,7 @@
     "test": "jest",
     "lint": "eslint .",
     "watch": "tsc -w",
-    "ci": "npm run coverage && codecov",
+    "ci": "npm run coverage",
     "compile": "rm -rf dist/* && rm -rf esm/* && tsc --module commonjs --outdir dist && tsc --module es6 --outdir esm",
     "preversion": "npm run compile && git add ."
   },
@@ -47,7 +47,6 @@
     "@types/jest": "^29.2.2",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.1",
-    "codecov": "^3.8.3",
     "eslint": "^8.27.0",
     "jest": "^29.3.1",
     "ts-jest": "^29.0.3",
