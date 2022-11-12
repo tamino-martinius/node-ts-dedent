@@ -113,5 +113,7 @@ jobs:
             ${{ runner.os }}-
       - name: Install node modules
         run: npm install
-      - name: Coverage
+      - name: Run Coverage Script
         run: npm run ci
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
