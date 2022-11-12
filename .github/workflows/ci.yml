@@ -21,9 +21,6 @@ jobs:
             ubuntu-22.04, # EOL 2027-04-21 / 2032-04-01
             ubuntu-20.04, # EOL 2025-04-02 / 2030-04-01
           ]
-        include:
-          - node: 16.x, # EOL  --over--  / 2023-09-11
-            os: ubuntu-18.04, # EOL 2023-04-02 / 2028-04-01
 
     steps:
       # Configures the node version used on GitHub-hosted runners
@@ -66,9 +63,6 @@ jobs:
             ubuntu-22.04, # EOL 2027-04-21 / 2032-04-01
             ubuntu-20.04, # EOL 2025-04-02 / 2030-04-01
           ]
-        include:
-          - node: 16.x, # EOL  --over--  / 2023-09-11
-            os: ubuntu-18.04, # EOL 2023-04-02 / 2028-04-01
 
     steps:
       # Configures the node version used on GitHub-hosted runners
