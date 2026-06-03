@@ -160,6 +160,13 @@ git commit -m "fix(pkg): declare dist/esm module types, drop redundant .npmignor
 **Files:**
 - Modify: `src/__tests__/index.spec.ts:1`
 - Modify: `package.json` (jest config)
+- Modify: `tsconfig.jest.json` (TypeScript `paths` so ts-jest's type-checker resolves the name)
+
+> Note: `moduleNameMapper` only affects jest's *runtime* resolution. ts-jest also
+> *type-checks* the spec, and TypeScript rejects the unresolved `ts-dedent` import
+> (TS2307) unless a `paths` mapping is added too. `tsconfig.jest.json` existed but
+> was previously unused (ts-jest defaulted to `tsconfig.json`); we wire it up
+> explicitly via the transform options and add the mapping there.
 
 - [ ] **Step 1: Point the spec at the public package name**
 
@@ -182,12 +189,17 @@ Expected: FAIL — `Cannot find module 'ts-dedent' from 'src/__tests__/index.spe
 
 - [ ] **Step 3: Map the package name to source for dev/CI runs**
 
-In `package.json`, inside the `"jest"` object, add a `moduleNameMapper` entry so the import resolves to source during normal runs. The `"jest"` block becomes:
+(a) In `package.json`, update the `"jest"` block so the transform loads `tsconfig.jest.json` and add the runtime `moduleNameMapper`. The block becomes:
 
 ```json
   "jest": {
     "transform": {
-      ".ts": "ts-jest"
+      ".ts": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.jest.json"
+        }
+      ]
     },
     "testRegex": "\\.(test|spec)\\.ts$",
     "moduleFileExtensions": [
@@ -202,15 +214,27 @@ In `package.json`, inside the `"jest"` object, add a `moduleNameMapper` entry so
   }
 ```
 
+(b) In `tsconfig.jest.json`, add `baseUrl` and a `paths` mapping so the type-checker resolves `ts-dedent` to source. The `compilerOptions` becomes:
+
+```json
+  "compilerOptions": {
+    "module": "commonjs",
+    "baseUrl": ".",
+    "paths": {
+      "ts-dedent": ["./src/index.ts"]
+    }
+  }
+```
+
 - [ ] **Step 4: Run the suite to verify it passes against source**
 
 Run: `npm test`
-Expected: PASS — lint clean, all jest suites green (the same tests as before, now via the mapped name).
+Expected: PASS — lint clean, all jest suites green (the same tests as before, now via the mapped name). 23 passed.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/__tests__/index.spec.ts package.json
+git add src/__tests__/index.spec.ts package.json tsconfig.jest.json
 git commit -m "test: dogfood public package name via jest moduleNameMapper"
 ```
 
