@@ -1,5 +1,13 @@
 name: Release
 
+# ONE-TIME PREREQUISITES (see the "Releasing" section in README.md):
+#   1. Configure an npm trusted publisher for `ts-dedent` on npmjs.com
+#      (provider: GitHub Actions, repo: tamino-martinius/node-ts-dedent, workflow: release.yml).
+#      Publishing is tokenless via OIDC `--provenance`; without this, the publish step fails.
+#   2. Branch protection on `master` must allow github-actions[bot] to push the release
+#      commit + tag.
+# Before dispatching: put the real changelog under "## vNext" in HISTORY.md (replace "TBD").
+
 on:
   workflow_dispatch:
     inputs:
@@ -168,7 +176,10 @@ jobs:
           name: release-tarball
       - name: Upgrade npm (OIDC trusted publishing)
         run: npm install -g npm@latest
-      - name: Commit, tag, push
+      # Commit + tag are created LOCALLY here and pushed only AFTER npm publish
+      # succeeds, so a publish failure (e.g. trusted publisher not yet configured)
+      # leaves master untouched and the release is cleanly retryable.
+      - name: Commit and tag (local)
         env:
           VERSION: ${{ inputs.version }}
         run: |
@@ -177,12 +188,13 @@ jobs:
           git add package.json package-lock.json HISTORY.md
           git commit -m "chore(release): v$VERSION"
           git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push origin master --follow-tags
       - name: Publish to npm with provenance
         env:
           VERSION: ${{ inputs.version }}
           DIST_TAG: ${{ needs.build.outputs.dist_tag }}
         run: npm publish "./ts-dedent-$VERSION.tgz" --provenance --access public --tag "$DIST_TAG"
+      - name: Push release commit and tag
+        run: git push origin master --follow-tags
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

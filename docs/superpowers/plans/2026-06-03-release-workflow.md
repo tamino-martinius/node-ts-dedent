@@ -1173,7 +1173,9 @@ jobs:
           name: release-tarball
       - name: Upgrade npm (OIDC trusted publishing)
         run: npm install -g npm@latest
-      - name: Commit, tag, push
+      # Commit + tag locally, push only AFTER npm publish succeeds, so a publish
+      # failure leaves master untouched and the release is cleanly retryable.
+      - name: Commit and tag (local)
         env:
           VERSION: ${{ inputs.version }}
         run: |
@@ -1182,12 +1184,13 @@ jobs:
           git add package.json package-lock.json HISTORY.md
           git commit -m "chore(release): v$VERSION"
           git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push origin master --follow-tags
       - name: Publish to npm with provenance
         env:
           VERSION: ${{ inputs.version }}
           DIST_TAG: ${{ needs.build.outputs.dist_tag }}
         run: npm publish "./ts-dedent-$VERSION.tgz" --provenance --access public --tag "$DIST_TAG"
+      - name: Push release commit and tag
+        run: git push origin master --follow-tags
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
