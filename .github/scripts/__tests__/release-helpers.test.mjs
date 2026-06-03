@@ -95,3 +95,42 @@ test('extractVNext returns empty string for TBD/empty section', () => {
 test('extractVNext returns null when no vNext heading exists', () => {
   assert.equal(extractVNext('# History\n\n## v1.0.0\n\n- x\n'), null);
 });
+
+import { rollHistory } from '../release-roll-history.mjs';
+
+test('rollHistory renames vNext and inserts a fresh vNext above it', () => {
+  const input = `# History
+
+## vNext
+
+- Added a thing
+
+## v2.2.1
+
+- old
+`;
+  const expected = `# History
+
+## vNext
+
+TBD
+
+## v2.3.0
+
+- Added a thing
+
+## v2.2.1
+
+- old
+`;
+  assert.equal(rollHistory(input, '2.3.0'), expected);
+});
+
+test('rollHistory throws when the target version already exists', () => {
+  const input = '# History\n\n## vNext\n\nTBD\n\n## v2.3.0\n\n- x\n';
+  assert.throws(() => rollHistory(input, '2.3.0'), /already contains v2.3.0/);
+});
+
+test('rollHistory throws when there is no vNext section', () => {
+  assert.throws(() => rollHistory('# History\n\n## v1.0.0\n', '2.0.0'), /no "## vNext"/);
+});
