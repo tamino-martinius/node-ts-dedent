@@ -40,6 +40,8 @@ try {
     JSON.stringify({ name: 'ts-dedent-consumer', private: true, version: '0.0.0' }, null, 2) + '\n',
   );
 
+  // typescript@latest is intentional: verify the published types resolve against the CURRENT
+  // TypeScript. This is what surfaces resolution regressions (e.g. TS6 tightened nodenext).
   step('install packed tarball + typescript', () => {
     run(npm, ['install', tgz, 'typescript@latest', '--no-audit', '--no-fund', '--silent'], {
       cwd: tmp,
@@ -47,8 +49,10 @@ try {
   });
 
   // 1) Runtime smoke — every import style.
-  copyFileSync(join(here, 'smoke', 'consumer.cjs'), join(tmp, 'consumer.cjs'));
-  copyFileSync(join(here, 'smoke', 'consumer.mjs'), join(tmp, 'consumer.mjs'));
+  step('copy smoke consumers into consumer project', () => {
+    copyFileSync(join(here, 'smoke', 'consumer.cjs'), join(tmp, 'consumer.cjs'));
+    copyFileSync(join(here, 'smoke', 'consumer.mjs'), join(tmp, 'consumer.mjs'));
+  });
   step('runtime: CommonJS require()', () => run(node, ['--test', 'consumer.cjs'], { cwd: tmp }));
   step('runtime: ESM import', () => run(node, ['--test', 'consumer.mjs'], { cwd: tmp }));
 
@@ -83,6 +87,8 @@ try {
   }
 
   typeCase('types-cjs', 'commonjs', [
+    // classic node10 resolution validates the legacy top-level `types`/`main` path (it ignores
+    // `exports`). TS6 made node10 a hard error, so suppress that one deprecation.
     { module: 'commonjs', moduleResolution: 'node', ignoreDeprecations: '6.0' },
     { module: 'node16', moduleResolution: 'node16' },
   ]);
