@@ -37,3 +37,24 @@ test('deriveDistTag: prerelease → leading alpha identifier', () => {
 test('deriveDistTag: numeric-only prerelease id → next', () => {
   assert.equal(deriveDistTag('2.3.0-1'), 'next');
 });
+
+import { bumpVersion } from '../release-bump-version.mjs';
+import { writeFileSync as wf, readFileSync as rf, mkdtempSync as mkd, rmSync as rm } from 'node:fs';
+import { tmpdir as td } from 'node:os';
+import { join as jn } from 'node:path';
+
+test('bumpVersion sets version and keeps 2-space indent + trailing newline', () => {
+  const dir = mkd(jn(td(), 'bump-'));
+  try {
+    const p = jn(dir, 'package.json');
+    wf(p, JSON.stringify({ name: 'x', version: '1.0.0' }, null, 2) + '\n');
+    const out = bumpVersion(p, '2.3.0');
+    assert.equal(out, '2.3.0');
+    const raw = rf(p, 'utf8');
+    assert.equal(JSON.parse(raw).version, '2.3.0');
+    assert.match(raw, /\n {2}"version": "2.3.0"/);
+    assert.ok(raw.endsWith('\n'));
+  } finally {
+    rm(dir, { recursive: true, force: true });
+  }
+});
