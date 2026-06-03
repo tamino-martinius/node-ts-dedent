@@ -6,7 +6,12 @@
   "main": "./dist/index.js",
   "module": "./esm/index.js",
   "jsnext:main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "require": "./dist/index.js",
+    "import": "./esm/index.js"
+  },
   "license": "MIT",
   "files": [
     "dist",
