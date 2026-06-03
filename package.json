@@ -8,9 +8,8 @@
   "jsnext:main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "types": "./dist/index.d.ts",
-    "require": "./dist/index.js",
-    "import": "./esm/index.js"
+    "import": { "types": "./esm/index.d.ts", "default": "./esm/index.js" },
+    "require": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
   },
   "license": "MIT",
   "files": [
