@@ -26,8 +26,10 @@ jobs:
     steps:
       - name: Guard ref
         if: github.ref_name != 'master'
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          echo "::error::release may only be dispatched from master (got ${{ github.ref_name }})"
+          echo "::error::release may only be dispatched from master (got $REF_NAME)"
           exit 1
       - uses: actions/checkout@v4
         with:
@@ -140,7 +142,9 @@ jobs:
           name: release-tarball
       - name: Verify packaged artifact (CJS + ESM + types)
         shell: bash
-        run: node .github/scripts/verify-packaged.mjs "ts-dedent-${{ inputs.version }}.tgz"
+        env:
+          VERSION: ${{ inputs.version }}
+        run: node .github/scripts/verify-packaged.mjs "ts-dedent-$VERSION.tgz"
 
   publish:
     needs: [build, verify]
