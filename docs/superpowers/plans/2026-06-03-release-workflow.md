@@ -316,6 +316,19 @@ git commit -m "test: add CJS + ESM consumer smoke tests"
 
 **Files:**
 - Create: `.github/scripts/verify-packaged.mjs`
+- Modify: `package.json` (`exports` per-condition types — see Deviations)
+
+> **Deviations applied during implementation (against TypeScript 6.0, the current `@latest`):**
+> 1. **`exports` per-condition types fix** (outward-facing): the original single
+>    `exports.types`→`dist/index.d.ts` broke `nodenext` ESM default-import typing under TS6.
+>    Changed `package.json#exports` to
+>    `{ "import": { "types": "./esm/index.d.ts", "default": "./esm/index.js" }, "require": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } }`.
+>    Top-level `types`/`main`/`module` kept for legacy tooling. Runtime CJS/ESM + all type
+>    modes verified PASS after the change.
+> 2. **`--ignoreDeprecations 6.0`** appended only to the classic `moduleResolution: node`
+>    (node10) type case, which TS6 turned into a hard error (TS5107). The `node` mode
+>    descriptor carries an `ignoreDeprecations: '6.0'` field and the runner appends the flag
+>    when present. (Caveat: TS7 will remove node10 entirely; revisit then.)
 
 - [ ] **Step 1: Implement the verifier**
 

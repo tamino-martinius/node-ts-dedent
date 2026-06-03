@@ -64,8 +64,14 @@ forward. No history rewrite.
 - Verified: with the `esm/` marker, all five runtime import styles and both type-resolution
   modes still PASS, with no regression.
 
-`package.json#exports` already maps `types`→`dist/index.d.ts`, `require`→`dist/index.js`,
-`import`→`esm/index.js`; it is left as-is (these fixes make it correct in practice).
+`package.json#exports` originally mapped a single `types`→`dist/index.d.ts` plus
+`require`→`dist/index.js`, `import`→`esm/index.js`. Investigation under TypeScript 6 +
+`moduleResolution: nodenext` showed this breaks ESM **type** resolution (an ESM consumer's
+`import dedent from 'ts-dedent'` resolves types to the CJS `.d.ts` and the default becomes
+non-callable). Fixed to per-condition types — this is the concrete "types correctly hooked
+up" fix the new CI is meant to surface:
+`{ "import": { "types": "./esm/index.d.ts", "default": "./esm/index.js" }, "require": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } }`.
+The top-level `package.json#types`/`main`/`module` fields are kept for legacy tooling.
 
 ## 4. Shared support matrix (single source of truth)
 
