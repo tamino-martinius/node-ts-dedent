@@ -1,7 +1,11 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "module": "commonjs"
+    "module": "commonjs",
+    "paths": {
+      "ts-dedent": ["./src/index.ts"]
+    },
+    "baseUrl": "."
   },
   "globals": {
     "ts-jest": {

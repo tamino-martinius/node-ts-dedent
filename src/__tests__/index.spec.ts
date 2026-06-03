@@ -1,4 +1,4 @@
-import { dedent } from '..';
+import { dedent } from 'ts-dedent';
 
 function tag(strings: TemplateStringsArray, ...values: number[]) {
   let string = strings[0];

@@ -60,7 +60,7 @@
   },
   "jest": {
     "transform": {
-      ".ts": "ts-jest"
+      ".ts": ["ts-jest", {"tsconfig": "tsconfig.jest.json"}]
     },
     "testRegex": "\\.(test|spec)\\.ts$",
     "moduleFileExtensions": [
@@ -68,6 +68,9 @@
       "tsx",
       "js",
       "json"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^ts-dedent$": "<rootDir>/src/index.ts"
+    }
   }
 }
