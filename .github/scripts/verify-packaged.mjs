@@ -18,14 +18,25 @@ const tgz = resolve(process.cwd(), tgzArg);
 const node = process.execPath;
 
 const results = [];
-function step(name, fn) {
+let aborted = false;
+function step(name, fn, { critical = false } = {}) {
+  if (aborted) {
+    process.stdout.write(`\n=== ${name} (skipped) ===\n`);
+    results.push([name, 'skip']);
+    return false;
+  }
   process.stdout.write(`\n=== ${name} ===\n`);
   try {
     fn();
     results.push([name, true]);
+    return true;
   } catch (err) {
     console.error(String(err && err.message ? err.message : err));
     results.push([name, false]);
+    // A critical step is a prerequisite for everything after it (e.g. the install):
+    // mark the run aborted so the rest is skipped instead of cascading into noise.
+    if (critical) aborted = true;
+    return false;
   }
 }
 function run(cmd, args, opts = {}) {
@@ -51,9 +62,13 @@ try {
 
   // typescript@latest is intentional: verify the published types resolve against the CURRENT
   // TypeScript. This is what surfaces resolution regressions (e.g. TS6 tightened nodenext).
-  step('install packed tarball + typescript', () => {
-    npmInstall(['install', tgz, 'typescript@latest', '--no-audit', '--no-fund', '--silent'], tmp);
-  });
+  step(
+    'install packed tarball + typescript',
+    () => {
+      npmInstall(['install', tgz, 'typescript@latest', '--no-audit', '--no-fund', '--silent'], tmp);
+    },
+    { critical: true },
+  );
 
   // 1) Runtime smoke — every import style.
   step('copy smoke consumers into consumer project', () => {
@@ -136,8 +151,11 @@ module.exports = {
 }
 
 process.stdout.write('\n=== verify-packaged summary ===\n');
-for (const [name, ok] of results) process.stdout.write(`${ok ? 'PASS' : 'FAIL'}  ${name}\n`);
-const failed = results.filter(([, ok]) => !ok);
+for (const [name, status] of results) {
+  const label = status === true ? 'PASS' : status === 'skip' ? 'SKIP' : 'FAIL';
+  process.stdout.write(`${label}  ${name}\n`);
+}
+const failed = results.filter(([, status]) => status === false);
 if (failed.length) {
   process.stderr.write(`\n${failed.length} packaged check(s) failed\n`);
   process.exit(1);

@@ -6,10 +6,5 @@
       "ts-dedent": ["./src/index.ts"]
     },
     "baseUrl": "."
-  },
-  "globals": {
-    "ts-jest": {
-      "enableTsDiagnostics": true
-    }
   }
 }
