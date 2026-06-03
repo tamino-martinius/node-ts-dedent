@@ -45,7 +45,7 @@
     "lint": "eslint .",
     "watch": "tsc -w",
     "ci": "npm run coverage",
-    "compile": "rm -rf dist/* && rm -rf esm/* && tsc --module commonjs --outdir dist && tsc --module es6 --outdir esm",
+    "compile": "rm -rf dist/* && rm -rf esm/* && tsc --module commonjs --outdir dist && tsc --module es6 --outdir esm && node .github/scripts/write-build-markers.mjs",
     "preversion": "npm run compile && git add ."
   },
   "devDependencies": {
