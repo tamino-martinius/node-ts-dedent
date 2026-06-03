@@ -106,7 +106,7 @@ export function writeBuildMarkers(rootDir = process.cwd()) {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   writeBuildMarkers();
 }
 ```
@@ -505,7 +505,7 @@ export function deriveDistTag(version) {
   return alpha ? alpha[0].toLowerCase() : 'next';
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const version = process.argv[2];
   if (!version) {
     console.error('usage: release-derive-dist-tag.mjs <version>');
@@ -584,7 +584,7 @@ export function bumpVersion(pkgPath, version) {
   return version;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const version = process.argv[2];
   const pkgPath = process.argv[3] || 'package.json';
   if (!version) {
@@ -692,7 +692,7 @@ export function extractVNext(historyText) {
   return text;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const outfile = process.argv[2];
   const historyPath = process.argv[3] || 'HISTORY.md';
   if (!outfile) {
@@ -813,7 +813,7 @@ export function rollHistory(historyText, version) {
   return lines.join('\n');
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const version = process.argv[2];
   const historyPath = process.argv[3] || 'HISTORY.md';
   if (!version) {
@@ -877,7 +877,7 @@ jobs:
       - name: Test source (lint + jest)
         run: npm test
       - name: Helper script unit tests
-        run: node --test .github/scripts/__tests__/
+        run: npm run test:scripts
 
   pack:
     runs-on: ubuntu-latest
@@ -1024,7 +1024,7 @@ jobs:
       - name: Test source (lint + jest) and helpers
         run: |
           npm test
-          node --test .github/scripts/__tests__/
+          npm run test:scripts
       - name: Derive npm dist-tag
         id: dist
         env:
@@ -1214,7 +1214,7 @@ Run:
 ```bash
 npm ci
 npm test
-node --test .github/scripts/__tests__/
+npm run test:scripts
 npm run compile
 TGZ=$(npm pack --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s)[0].filename))')
 node .github/scripts/verify-packaged.mjs "$TGZ"
