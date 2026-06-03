@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { writeBuildMarkers } from '../write-build-markers.mjs';
+import { deriveDistTag } from '../release-derive-dist-tag.mjs';
 
 test('writeBuildMarkers writes dist + esm module-type markers', () => {
   const dir = mkdtempSync(join(tmpdir(), 'markers-'));
@@ -19,4 +20,20 @@ test('writeBuildMarkers writes dist + esm module-type markers', () => {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('deriveDistTag: stable version → latest', () => {
+  assert.equal(deriveDistTag('2.3.0'), 'latest');
+  assert.equal(deriveDistTag('10.0.1'), 'latest');
+});
+
+test('deriveDistTag: prerelease → leading alpha identifier', () => {
+  assert.equal(deriveDistTag('2.3.0-beta.1'), 'beta');
+  assert.equal(deriveDistTag('2.3.0-rc.0'), 'rc');
+  assert.equal(deriveDistTag('2.3.0-next.5'), 'next');
+  assert.equal(deriveDistTag('2.3.0-alpha'), 'alpha');
+});
+
+test('deriveDistTag: numeric-only prerelease id → next', () => {
+  assert.equal(deriveDistTag('2.3.0-1'), 'next');
 });
