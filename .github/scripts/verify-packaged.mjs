@@ -16,7 +16,6 @@ if (!tgzArg) {
 const tgz = resolve(process.cwd(), tgzArg);
 
 const node = process.execPath;
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 const results = [];
 function step(name, fn) {
@@ -32,6 +31,16 @@ function step(name, fn) {
 function run(cmd, args, opts = {}) {
   execFileSync(cmd, args, { stdio: 'inherit', ...opts });
 }
+// npm is `npm.cmd` on Windows, and Node refuses to execFile `.cmd`/`.bat` files directly
+// (CVE-2024-27980). Spawn cmd.exe with an argument ARRAY (no shell string is constructed,
+// so there is no injection surface); on POSIX run npm directly.
+function npmInstall(args, cwd) {
+  if (process.platform === 'win32') {
+    run(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', 'npm', ...args], { cwd });
+  } else {
+    run('npm', args, { cwd });
+  }
+}
 
 const tmp = mkdtempSync(join(tmpdir(), 'tsdedent-verify-'));
 try {
@@ -43,9 +52,7 @@ try {
   // typescript@latest is intentional: verify the published types resolve against the CURRENT
   // TypeScript. This is what surfaces resolution regressions (e.g. TS6 tightened nodenext).
   step('install packed tarball + typescript', () => {
-    run(npm, ['install', tgz, 'typescript@latest', '--no-audit', '--no-fund', '--silent'], {
-      cwd: tmp,
-    });
+    npmInstall(['install', tgz, 'typescript@latest', '--no-audit', '--no-fund', '--silent'], tmp);
   });
 
   // 1) Runtime smoke — every import style.
