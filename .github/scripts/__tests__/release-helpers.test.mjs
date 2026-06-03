@@ -58,3 +58,40 @@ test('bumpVersion sets version and keeps 2-space indent + trailing newline', () 
     rm(dir, { recursive: true, force: true });
   }
 });
+
+import { extractVNext } from '../release-compose-notes.mjs';
+
+const HISTORY_WITH_NOTES = `# History
+
+## vNext
+
+- Added a thing
+- Fixed another thing
+
+## v2.2.1
+
+- old
+`;
+
+const HISTORY_TBD = `# History
+
+## vNext
+
+TBD
+
+## v2.2.1
+
+- old
+`;
+
+test('extractVNext returns the vNext body when present', () => {
+  assert.equal(extractVNext(HISTORY_WITH_NOTES), '- Added a thing\n- Fixed another thing');
+});
+
+test('extractVNext returns empty string for TBD/empty section', () => {
+  assert.equal(extractVNext(HISTORY_TBD), '');
+});
+
+test('extractVNext returns null when no vNext heading exists', () => {
+  assert.equal(extractVNext('# History\n\n## v1.0.0\n\n- x\n'), null);
+});
