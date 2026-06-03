@@ -1,238 +1,215 @@
-# Release workflow for `ts-dedent` — Design
+# Release workflow + packaging hardening for `ts-dedent` — Design
 
 Date: 2026-06-03
-Status: Approved (pending spec review)
+Status: Approved in principle; revised after empirical investigation (pending final spec review)
 
-## 1. Goal
+## 1. Goals
 
-Add a GitHub Actions **release workflow** that, from a single manual dispatch:
+1. Add a GitHub Actions **release workflow** (manual dispatch) that verifies tests pass on the
+   **packaged artifact** before publishing, then bumps the version, maintains `HISTORY.md` +
+   GitHub Release notes, publishes to npm with provenance, tags, and creates the release.
+2. **Fix the packaging** so the package can be consumed *every imaginable way* (CommonJS
+   `require`, native ESM `import`, bundlers) robustly — not by accident of Node's ESM
+   syntax-detection — and so its **TypeScript types resolve** for CJS, node16/nodenext, and
+   bundler consumers.
+3. **Modernise CI** to (a) test the package as-is, (b) build+pack and verify the **packaged**
+   artifact works in every consumption style **and** that its types are correctly hooked up,
+   across every currently-maintained Node version on Linux/macOS/Windows.
 
-1. Verifies the tests pass **on the packaged package** (the exact `.tgz`) across all
-   currently-maintained platforms **before** anything is published.
-2. Bumps `package.json` to the released version.
-3. Maintains `HISTORY.md` (rolls the `## vNext` section into the released version) and
-   derives the GitHub Release notes ("changelog") from that same section.
-4. Publishes to npm with provenance.
-5. Creates the matching git tag and a GitHub Release with the tarball attached.
+## 2. Empirical findings (investigated 2026-06-03; these drive the design)
 
-Secondary goal: **modernise and align the existing CI workflow** so it tests the package
-*as-is* and also **builds + packs + verifies the packaged artifact**, and so both workflows
-only run on currently-maintained (non-EOL) Node and OS versions.
+Built + packed the real package, installed the tarball into a throwaway consumer, and tested
+on Node v25 with TypeScript 4.8.4:
 
-This mirrors the structure of the author's `node-next-model` release workflow
-(`workflow_dispatch` + `.github/scripts/release-*.mjs` helpers + OIDC `--provenance`),
-adapted from a pnpm monorepo to this single npm package.
+| Consumer path | Result |
+| --- | --- |
+| CJS `require('ts-dedent').default(...)` | PASS |
+| CJS `const { dedent } = require('ts-dedent')` | PASS |
+| ESM `import dedent from 'ts-dedent'` | PASS |
+| ESM `import { dedent } from 'ts-dedent'` | PASS |
+| ESM `import * as ns from 'ts-dedent'` | PASS |
+| Types `--moduleResolution node` (CJS) | PASS |
+| Types `--moduleResolution node16` (node ESM, exports-aware) | PASS |
 
-## 2. Repository facts that shape the design
+What this means, vs. the original "npmignore/esm bug" hypothesis:
 
-- Single, unscoped, public npm package `ts-dedent`. Default branch: **`master`**.
-- Build: `npm run compile` → `tsc` emits CommonJS to `dist/` and ESM to `esm/`.
-- Test: `npm test` → `pretest` runs `eslint .`, then `jest` (ts-jest) against **source**.
-- The existing spec `src/__tests__/index.spec.ts` imports `from '..'`, i.e. it tests the
-  TypeScript source, **not** the packaged build.
-- `src/index.ts` exports **both** `export function dedent` (named) and `export default dedent`.
-- `package.json#exports` maps `import` → `esm/index.js`, `require` → `dist/index.js`.
-- `.npmignore` is `*` + `!dist` — it **excludes `esm/`**, contradicting the `exports` map.
-  This is a real packaging bug; the new ESM smoke test is expected to surface it
-  (see §9, "Known issue this design exposes").
-- Version drift (pre-existing): `package.json` = `2.2.0`, `HISTORY.md` documents `v2.2.1`,
-  git tags stop at `v2.1.1`. Cause: releases were done by hand. The first run of this
-  workflow (with an explicit `version` input) reconciles the drift going forward; no
-  retroactive history rewrite is performed.
+- **`.npmignore` is NOT excluding `esm/`.** `npm pack --dry-run` ships `dist/`, `esm/`, and
+  `src/`. Because `package.json#files` (`["dist","esm","src"]`) is present, npm uses it as the
+  allow-list and the root `.npmignore` (`*` + `!dist`) is effectively ignored. The `.npmignore`
+  is therefore **redundant and misleading** — it implies only `dist` ships. Removing it leaves
+  the tarball byte-for-byte identical (verified).
+- **The genuine fragility is the ESM module format.** `esm/index.js` contains real ES syntax
+  (`export default dedent`) but the package has no `"type": "module"`. Native ESM `import`
+  currently succeeds *only* because of Node's automatic ESM **syntax detection** (default since
+  Node 22.7). That is implicit and would fail on Node 20 (now EOL). The correct, explicit fix
+  is to declare `esm/` as ESM.
 
-## 3. Shared support matrix (single source of truth)
+### Pre-existing version drift (context, not fixed retroactively)
+`package.json` = `2.2.0`, `HISTORY.md` documents `v2.2.1`, git tags stop at `v2.1.1`. Cause:
+manual releases. The first run of this workflow (explicit `version` input) reconciles it going
+forward. No history rewrite.
 
-Used by the CI `test`/`build` jobs and the release `verify` job. EOL dates are written as
-comments (`# EOL <active-support-end> / <eol>`) so staleness is easy to spot, matching the
-prior CI style. Verified against endoflife.date on 2026-06-03.
+## 3. Packaging fixes (item 2 of the goals)
+
+- **Remove `.npmignore`.** `package.json#files` becomes the single source of truth for tarball
+  contents (`dist`, `esm`, `src`).
+- **Declare `esm/` as ESM explicitly:** ship `esm/package.json` = `{ "type": "module" }` so
+  `import 'ts-dedent'` always loads `esm/index.js` as ESM regardless of Node syntax detection.
+  For symmetry/robustness also ship `dist/package.json` = `{ "type": "commonjs" }` (the root is
+  already CommonJS by default, so this is belt-and-suspenders against a future root `"type"`).
+- Because `npm run compile` does `rm -rf dist/* esm/*`, the markers are (re)generated by the
+  build via a small `node` helper rather than committed-then-wiped:
+  `compile` → `… && tsc (cjs) && tsc (esm) && node .github/scripts/write-build-markers.mjs`.
+  (Marker writing uses `node` so it is cross-platform.)
+- Verified: with the `esm/` marker, all five runtime import styles and both type-resolution
+  modes still PASS, with no regression.
+
+`package.json#exports` already maps `types`→`dist/index.d.ts`, `require`→`dist/index.js`,
+`import`→`esm/index.js`; it is left as-is (these fixes make it correct in practice).
+
+## 4. Shared support matrix (single source of truth)
+
+Used by CI and the release `verify` job. EOL dates are inline comments
+(`# EOL <active-support-end> / <eol>`) so staleness is easy to spot; verified on
+endoflife.date 2026-06-03.
 
 ```yaml
-os: [ubuntu-latest, macos-latest, windows-latest] # *-latest auto-tracks the newest GitHub runner image
+os: [ubuntu-latest, macos-latest, windows-latest] # *-latest auto-tracks newest GitHub runner image
 node:
   - 22.x # Maintenance LTS — EOL 2025-10-21 / 2027-04-30
   - 24.x # Active LTS      — EOL 2026-10-20 / 2028-04-30
   - 26.x # Current         — EOL 2027-10-27 / 2029-04-30
 ```
 
-Rationale:
-- Node 18/19/20/21/23/25 are all EOL as of 2026-06-03 and are dropped.
-- Only Ubuntu 24.04 (`ubuntu-latest`) is in standard support; 22.04/20.04 are ESM-only and
-  the `ubuntu-20.04` runner image has already been removed by GitHub. Cross-platform breadth
-  is preserved via `macos-latest` + `windows-latest`.
-- Pinned OS versions are intentionally avoided in favour of `*-latest` so the OS axis does
-  not require manual EOL tracking; only the (manually pinned) Node axis carries EOL comments.
+EOL now and dropped: Node 18/19/20/21/23/25. Only Ubuntu 24.04 (`ubuntu-latest`) is in standard
+support (22.04/20.04 are ESM-only; the `ubuntu-20.04` runner image was removed by GitHub);
+cross-platform breadth is kept via `macos-latest` + `windows-latest`. Pinned OS versions are
+avoided so the OS axis needs no manual EOL tracking — only the pinned Node axis carries EOL
+comments.
 
-## 4. Release workflow (`.github/workflows/release.yml`)
+## 5. Packaged verification — `verify-packaged.mjs` (the heart of items 1 & 3)
 
-### 4.1 Trigger & guards (mirrors the reference)
+A single shared helper, invoked by both CI and the release workflow, given a path to a `.tgz`.
+It proves the **exact tarball** works for every consumer and that its types resolve. Steps:
 
-- `on: workflow_dispatch` with a required `version` input: semver, **no leading `v`**
-  (e.g. `2.3.0`, `2.3.0-beta.1`).
-- `permissions: { contents: write, id-token: write }` (id-token for OIDC provenance).
-- `concurrency: { group: release, cancel-in-progress: false }`.
-- Guard: refuse unless dispatched from `master`.
-- Validate the input is semver; **refuse if tag `v<version>` already exists** on origin.
-
-### 4.2 Architecture — 3-job pipeline (build once → verify everywhere → publish the verified artifact)
-
-The requirement "tests must pass on the packaged package before publish" is only truly
-guaranteed if publish is gated on a matrix that exercised the **exact tarball** being
-published. Hence three jobs:
-
-**Job `build`** (single, `ubuntu-latest`):
-1. Checkout (full history, persisted credentials for later push).
-2. Validate version / refuse-if-tag-exists / guard ref.
-3. `npm ci`.
-4. `npm test` (lint + source jest) — fail fast on obviously broken source.
-5. Derive npm dist-tag via `release-derive-dist-tag.mjs`; expose `is_prerelease`.
-6. Bump `package.json` version via `release-bump-version.mjs`.
-7. `npm install --package-lock-only` to sync `package-lock.json`.
-8. Compose release notes from `HISTORY.md` `## vNext` via `release-compose-notes.mjs`
-   (records whether real notes were found).
-9. Roll `HISTORY.md` via `release-roll-history.mjs` **(stable releases only)**.
-10. `npm run compile` then `npm pack` → produce `ts-dedent-<version>.tgz`.
-11. Upload artifacts: the `.tgz`, the notes file, and the three mutated files
-    (`package.json`, `package-lock.json`, `HISTORY.md`).
-- Outputs: `dist_tag`, `is_prerelease`, `have_notes`.
-
-**Job `verify`** (matrix from §3, `needs: build`):
-1. Checkout (needed for the spec + smoke scripts + helper).
-2. `npm ci` (provides jest/ts-jest/typescript to run the packaged suite).
-3. Download the `.tgz` artifact.
-4. `node .github/scripts/verify-packaged.mjs <tgz>` — installs the tarball into a throwaway
-   consumer project and runs **both**:
-   - the **full existing jest suite** against the installed package, and
-   - the **CJS + ESM consumer smoke tests**.
-   (See §6.) No repo mutation happens here.
-
-**Job `publish`** (single, `ubuntu-latest`, `needs: verify` — runs only if **every** matrix leg passed):
-1. Checkout `master`.
-2. Download artifacts; restore the three mutated files into the working tree.
-3. Configure `github-actions[bot]` git identity.
-4. Commit `chore(release): v<version>`; tag `v<version>`; `git push origin master --follow-tags`.
-5. `npm install -g npm@latest` (ensure a version new enough for OIDC trusted publishing).
-6. `npm publish <tgz> --provenance --access public` via **OIDC trusted publishing**
-   (no `NPM_TOKEN`; relies on `id-token: write` + a trusted publisher configured on npmjs.com — see §8).
-7. `gh release create v<version> <tgz>` with:
-   - `--title v<version>`,
-   - `--notes-file <notes>` when real notes exist, otherwise `--generate-notes`,
-   - `--prerelease` when `is_prerelease == true`, otherwise `--latest`.
-
-## 5. Helper scripts (`.github/scripts/*.mjs`)
-
-Pure Node ESM, no third-party deps. Mirrors the reference's script-per-concern style so logic
-is testable locally (e.g. `node .github/scripts/release-roll-history.mjs 2.3.0`).
-
-- **`release-derive-dist-tag.mjs <version>`** → prints `latest` for a stable version; for a
-  prerelease (`X.Y.Z-<id>...`) prints the leading alphabetic identifier (`beta`, `rc`,
-  `next`, `alpha`, …), falling back to `next` if the identifier is purely numeric.
-- **`release-bump-version.mjs <version>`** → sets `package.json#version`, preserving 2-space
-  indentation + trailing newline. Deliberately **not** `npm version`, to avoid triggering the
-  existing `preversion` hook (`npm run compile && git add .`) inside CI.
-- **`release-compose-notes.mjs <outfile>`** → extracts the body under `## vNext` (up to the
-  next `## ` heading) from `HISTORY.md`. Writes it to `<outfile>` and exits `0` when real
-  content exists; exits `1` when the section is empty or `TBD` (signal: "no notes, fall back
-  to `--generate-notes`"); exits `2` on unexpected error.
-- **`release-roll-history.mjs <version>`** → renames the current `## vNext` heading to
-  `## v<version>` and inserts a fresh `## vNext` / `TBD` block above it. Refuses if a
-  `## v<version>` section already exists. Runs for stable releases only.
-- **`verify-packaged.mjs <tgz>`** → shared by CI and release; see §6.
-
-## 6. Packaged verification (`verify-packaged.mjs`) — the core requirement
-
-Given a path to a packed `.tgz`:
-
-1. Create a throwaway temp consumer dir; write a minimal `private` `package.json`.
-2. `npm install <abs-path-to-tgz>` into it (installs `ts-dedent` as a real consumer would).
-3. **CJS + ESM smoke** — copy `.github/scripts/smoke/consumer.cjs` and `consumer.mjs` into the
-   temp dir and execute them there (so `require('ts-dedent')` / `import 'ts-dedent'` resolve to
-   the installed tarball). Each uses Node's built-in `node:test` + `node:assert` (zero deps):
-   - `consumer.cjs`: `require('ts-dedent')` → exercises `dist` (CJS) + the `require` export.
-   - `consumer.mjs`: `import dedent, { dedent as named } from 'ts-dedent'` → exercises `esm`
-     (ESM) + the `import` export + the default export.
-4. **Full jest suite against the package** — run the repo's jest (from `npm ci`) with a
-   generated config:
-   - `roots: [<repo>/src]`, `testRegex: \.(test|spec)\.ts$`,
-   - ts-jest in **transpile-only** mode (so compile-time module-type resolution of the
-     `ts-dedent` import is skipped),
-   - `moduleNameMapper: { '^ts-dedent$': '<tempdir>/node_modules/ts-dedent' }` so the spec
-     resolves to the **installed tarball** at runtime instead of source.
-   This reuses the entire existing 596-line spec to assert real runtime behavior of the
-   packaged build. (Type-level validation of the published `.d.ts` is out of scope here; the
-   smoke tests + jest validate behavior.)
+1. Create a throwaway temp consumer project; `npm install <abs-path-to-tgz>`.
+2. **Runtime smoke — every import style** (zero-dep, Node's built-in `node:test`/`node:assert`):
+   - `consumer.cjs`: `require('ts-dedent')` → exercises `dist` (CJS); asserts the named export
+     `dedent`, the `default` export, and destructuring all dedent correctly.
+   - `consumer.mjs`: `import dedent, { dedent as named } from 'ts-dedent'` and
+     `import * as ns from 'ts-dedent'` → exercises `esm` (ESM) for default, named, and namespace.
+   Copied into the temp project and run there so module resolution hits the installed tarball.
+3. **Type-resolution check — types are correctly hooked up** (`tsc --noEmit`): install
+   `typescript@latest` in the consumer; compile small `.ts` files that use both
+   `import { dedent }` and `import dedent` and assert `const s: string = dedent\`…\``, under
+   `--moduleResolution`:
+   - `node` (classic / CommonJS consumers),
+   - `node16` / `nodenext` (native Node ESM, honours `exports`),
+   - `bundler` (modern bundler consumers).
+   Confirms `package.json#types`/`exports.types` resolve and the `.d.ts` typechecks for CJS,
+   ESM, and bundler resolution.
+4. **Full existing jest suite against the package** — run the repo's jest with a generated
+   config: `roots:[<repo>/src]`, ts-jest in transpile-only mode, and
+   `moduleNameMapper:{ '^ts-dedent$': '<tempdir>/node_modules/ts-dedent' }` so the entire
+   596-line spec asserts real runtime behavior of the **installed build** (not source).
 5. Non-zero exit on any failure; best-effort temp cleanup.
 
-### 6.1 Minimal source change that enables suite reuse
+Local use: `node .github/scripts/verify-packaged.mjs ./ts-dedent-<version>.tgz`.
 
-To let the **same** spec test both source (dev/CI) and the packaged artifact (verify),
-change one import and add one mapping:
-
-- `src/__tests__/index.spec.ts`: `import { dedent } from '..'` → `import { dedent } from 'ts-dedent'`.
+### 5.1 Minimal source change enabling jest-suite reuse
+- `src/__tests__/index.spec.ts`: `import { dedent } from '..'` → `from 'ts-dedent'`.
 - `package.json` jest config: add `"moduleNameMapper": { "^ts-dedent$": "<rootDir>/src/index.ts" }`
-  so the normal dev/CI run still compiles and tests **source**.
+  so normal dev/CI runs still compile and test **source**.
 
-This "dogfoods the public package name" and avoids any test duplication or file-copy hacks.
+## 6. CI workflow (`.github/workflows/ci.yml`) — rebuilt around build-once → verify-matrix
 
-## 7. CI workflow changes (`.github/workflows/ci.yml`)
+Mirrors the release pipeline and sidesteps cross-platform `rm -rf`/`tsc` issues by building the
+tarball once and verifying it everywhere.
 
-Align CI with the release testing model and modernise it:
+- **`test`** (matrix §4): `npm ci` → `npm test` (lint + jest on **source**) — "tested as-is".
+- **`pack`** (single, `ubuntu-latest`): `npm ci` → `npm run compile` → `npm pack` → upload the
+  `.tgz` artifact.
+- **`verify-package`** (matrix §4, `needs: pack`): `npm ci` (provides jest/ts-jest/typescript) →
+  download the `.tgz` → `node .github/scripts/verify-packaged.mjs <tgz>`. This is where CI
+  confirms the package "works every imaginable way + types hooked up" on every non-EOL Node ×
+  Linux/macOS/Windows.
+- **`coverage`** (single, `ubuntu-latest`): unchanged (`npm run ci` → Codecov upload).
+- Bump deprecated action pins (`checkout@v3`/`setup-node@v3`/`cache@v3`/`codecov-action@v3`) to
+  current majors, since `cache@v3` is deprecated and these jobs are being edited anyway.
 
-- **`test` job** — intent unchanged: `npm ci` → `npm test` (lint + jest against **source**),
-  i.e. "test the package as-is". Matrix updated to §3.
-- **`build` job** — now **build → pack → verify-packaged**: `npm ci`, `npm run compile`,
-  `npm pack`, then `node .github/scripts/verify-packaged.mjs <tgz>`. This makes every push/PR
-  confirm the build/pack process does not break the packaged artifact (full jest suite +
-  CJS/ESM smoke). Matrix updated to §3.
-- **`coverage` job** — unchanged behavior (`ubuntu-latest`, `lts/*`, `npm run ci`, Codecov upload).
-- **Action versions** — bump deprecated pins (`actions/checkout@v3`, `actions/setup-node@v3`,
-  `actions/cache@v3`, `codecov/codecov-action@v3`) to their current majors, since `cache@v3`
-  is deprecated and these jobs are being edited anyway. The release workflow uses current
-  action majors throughout.
+## 7. Release workflow (`.github/workflows/release.yml`)
 
-## 8. One-time setup the maintainer must do (prerequisites)
+### 7.1 Trigger & guards (mirrors the node-next-model reference)
+- `on: workflow_dispatch` with required `version` input: semver, **no leading `v`**.
+- `permissions: { contents: write, id-token: write }`; `concurrency: { group: release, cancel-in-progress: false }`.
+- Refuse unless dispatched from `master`; validate semver; **refuse if tag `v<version>` exists** on origin.
 
-- **npm OIDC trusted publishing**: on npmjs.com → `ts-dedent` package → Settings → Trusted
-  Publishers → add a GitHub Actions publisher for repo `tamino-martinius/node-ts-dedent`,
-  workflow file `release.yml`. This enables tokenless `--provenance` publishing. Without it,
-  the publish step fails (by design — no long-lived `NPM_TOKEN` is stored).
-- **Branch push permission**: the `publish` job pushes the release commit + tag to `master`
-  with the default `GITHUB_TOKEN`. If `master` has branch protection, it must allow the
-  GitHub Actions bot to push (or the protection rule must exempt it).
+### 7.2 Three-job pipeline (build once → verify everywhere → publish the verified artifact)
+Publish is gated on the verify matrix so only a tarball proven on all platforms reaches npm.
 
-## 9. Edge cases & error handling
+**`build`** (single, `ubuntu-latest`): checkout (full history) → validate/guards → `npm ci` →
+`npm test` (fail fast) → derive npm dist-tag (`latest` for stable; `beta`/`rc`/`next`/… for
+prereleases) + `is_prerelease` → bump `package.json` → `npm install --package-lock-only` →
+compose release notes from `HISTORY.md#vNext` → roll `HISTORY.md` (stable only) →
+`npm run compile` → `npm pack`. Uploads: the `.tgz`, the notes file, and the three mutated
+files (`package.json`, `package-lock.json`, `HISTORY.md`). Outputs: `dist_tag`, `is_prerelease`,
+`have_notes`.
 
-- Invalid / `v`-prefixed version input → fail early with a clear `::error::`.
-- Tag already exists on origin → refuse before any mutation.
-- Empty / `TBD` `vNext` section → release notes fall back to `--generate-notes`; HISTORY roll
-  for a stable release still proceeds (renames the empty section), which is acceptable and
-  visible in the diff.
-- Prerelease versions → non-`latest` dist-tag, `--prerelease` GitHub Release, and HISTORY is
-  **not** rolled (kept rolling only on stable releases).
-- A failure in **any** `verify` matrix leg blocks `publish` entirely — nothing reaches npm.
-- **Known issue this design exposes**: the `.npmignore` (`*` + `!dist`) currently drops `esm/`,
-  while `package.json#exports.import` points to `esm/index.js`. The ESM smoke test is expected
-  to FAIL until this is fixed. Per the brainstorming decision, this design **surfaces** the bug
-  rather than silently fixing it; fixing `.npmignore` (e.g. `!dist` + `!esm`, or removing
-  `.npmignore` in favour of the `files` allow-list) is a small follow-up the maintainer can
-  approve separately.
+**`verify`** (matrix §4, `needs: build`): checkout → `npm ci` → download `.tgz` →
+`node .github/scripts/verify-packaged.mjs <tgz>` (identical coverage to CI §5). No repo mutation.
 
-## 10. Out of scope
+**`publish`** (single, `ubuntu-latest`, `needs: verify` — runs only if every matrix leg passed):
+checkout `master` → restore the three mutated files from artifact → configure
+`github-actions[bot]` → commit `chore(release): v<version>`, tag `v<version>`,
+`git push origin master --follow-tags` → `npm install -g npm@latest` (OIDC-capable) →
+`npm publish <tgz> --provenance --access public` via **OIDC trusted publishing** (no
+`NPM_TOKEN`) → `gh release create v<version> <tgz>` with `--title v<version>`,
+`--notes-file <notes>` (or `--generate-notes` when `vNext` was empty), and `--prerelease` for
+prerelease dist-tags (else `--latest`).
 
-- Retroactively rewriting `HISTORY.md`/tags for the pre-existing `2.2.0`/`2.2.1` drift.
-- Fixing the `.npmignore`/`esm` packaging bug (surfaced, not fixed — see §9).
-- Automated changelog generation from commits (notes come from `HISTORY.md#vNext`).
-- A separate root `CHANGELOG.md` file (HISTORY.md is the single source of truth).
+## 8. Helper scripts (`.github/scripts/*.mjs`, pure Node ESM, no deps)
 
-## 11. Deliverables
+- **`release-derive-dist-tag.mjs <version>`** → `latest` for stable; leading alphabetic
+  prerelease id (`beta`/`rc`/`next`/`alpha`/…), falling back to `next` for a purely numeric id.
+- **`release-bump-version.mjs <version>`** → set `package.json#version` (2-space indent +
+  trailing newline). Deliberately not `npm version`, to avoid the existing `preversion` hook.
+- **`release-compose-notes.mjs <outfile>`** → extract the `## vNext` body (to the next `## `
+  heading). Exit `0` with content written; exit `1` if empty/`TBD` (→ `--generate-notes`); exit
+  `2` on unexpected error.
+- **`release-roll-history.mjs <version>`** → rename `## vNext` → `## v<version>` and insert a
+  fresh `## vNext` / `TBD` block above. Refuses if `## v<version>` already exists. Stable only.
+- **`write-build-markers.mjs`** → write `esm/package.json` (`{"type":"module"}`) and
+  `dist/package.json` (`{"type":"commonjs"}`). Run at the end of `compile`.
+- **`verify-packaged.mjs <tgz>`** → §5.
+- **`smoke/consumer.cjs`**, **`smoke/consumer.mjs`** → the runtime import-style assertions.
 
+## 9. One-time maintainer prerequisites
+- **npm OIDC trusted publishing:** on npmjs.com → `ts-dedent` → Settings → Trusted Publishers →
+  add GitHub Actions publisher for `tamino-martinius/node-ts-dedent`, workflow `release.yml`.
+  Enables tokenless `--provenance`. Without it, publish fails by design (no stored token).
+- **Branch push permission:** the `publish` job pushes the release commit + tag to `master`
+  using `GITHUB_TOKEN`; `master` protection must allow the Actions bot to push.
+
+## 10. Edge cases & error handling
+- Invalid / `v`-prefixed version → fail early with `::error::`.
+- Tag already on origin → refuse before any mutation.
+- Empty/`TBD` `vNext` → notes fall back to `--generate-notes`; stable HISTORY roll still proceeds.
+- Prerelease versions → non-`latest` dist-tag, `--prerelease` release, HISTORY not rolled.
+- Any `verify` matrix leg failing blocks `publish` entirely — nothing reaches npm.
+
+## 11. Out of scope
+- Retroactive rewrite of `HISTORY.md`/tags for the pre-existing `2.2.0`/`2.2.1` drift.
+- Automated changelog from commits (notes come from `HISTORY.md#vNext`).
+- A separate root `CHANGELOG.md` (HISTORY.md is the single source of truth).
+- Converting the build off committed `dist/esm` (the repo tracks build output; left as-is).
+
+## 12. Deliverables
 - `.github/workflows/release.yml` (new).
-- `.github/workflows/ci.yml` (modified: matrix, build job, action versions).
-- `.github/scripts/release-derive-dist-tag.mjs`
-- `.github/scripts/release-bump-version.mjs`
-- `.github/scripts/release-compose-notes.mjs`
-- `.github/scripts/release-roll-history.mjs`
-- `.github/scripts/verify-packaged.mjs`
-- `.github/scripts/smoke/consumer.cjs`
-- `.github/scripts/smoke/consumer.mjs`
-- `src/__tests__/index.spec.ts` (one-line import change).
-- `package.json` (jest `moduleNameMapper`).
+- `.github/workflows/ci.yml` (rebuilt: matrix, build-once→verify-matrix, action versions).
+- `.github/scripts/`: `release-derive-dist-tag.mjs`, `release-bump-version.mjs`,
+  `release-compose-notes.mjs`, `release-roll-history.mjs`, `write-build-markers.mjs`,
+  `verify-packaged.mjs`, `smoke/consumer.cjs`, `smoke/consumer.mjs`.
+- Packaging fix: delete `.npmignore`; `package.json#scripts.compile` appends marker generation;
+  generated `dist/package.json` + `esm/package.json` markers (tracked alongside the committed build).
+- Test reuse: `src/__tests__/index.spec.ts` import change; `package.json` jest `moduleNameMapper`.
+```
