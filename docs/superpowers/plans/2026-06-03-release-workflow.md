@@ -1233,7 +1233,7 @@ git commit -m "docs: note release workflow + packaging changes in HISTORY vNext"
 - [ ] **Step 4: Push the branch and open a PR**
 
 ```bash
-git push -u origin tm/banjul
+git push -u origin tm/npm-release-script
 gh pr create --base master --title "Add automated release workflow + packaging hardening" \
   --body "See docs/superpowers/plans/2026-06-03-release-workflow.md. Adds a manual-dispatch release workflow (verify packaged artifact → npm publish with provenance → GitHub release → HISTORY/version upkeep), fixes ESM module declaration, removes the redundant .npmignore, and modernises CI to verify the packaged artifact (CJS/ESM/types) on maintained Node 22/24/26 across Linux/macOS/Windows."
 ```
