@@ -94,7 +94,7 @@ jobs:
         id: notes
         run: |
           set +e
-          node .github/scripts/release-compose-notes.mjs .release-notes.md
+          node .github/scripts/release-compose-notes.mjs release-notes.md
           code=$?
           set -e
           if [ "$code" = "0" ]; then
@@ -128,7 +128,7 @@ jobs:
             package.json
             package-lock.json
             HISTORY.md
-            .release-notes.md
+            release-notes.md
           if-no-files-found: ignore
 
   verify:
@@ -219,7 +219,7 @@ jobs:
           if [ "$IS_PRERELEASE" = "true" ]; then FLAG="--prerelease"; fi
           if [ "$HAVE_NOTES" = "true" ]; then
             gh release create "v$VERSION" "./ts-dedent-$VERSION.tgz" \
-              --title "v$VERSION" --notes-file .release-notes.md $FLAG
+              --title "v$VERSION" --notes-file release-notes.md $FLAG
           else
             gh release create "v$VERSION" "./ts-dedent-$VERSION.tgz" \
               --title "v$VERSION" --generate-notes $FLAG
