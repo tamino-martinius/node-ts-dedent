@@ -133,7 +133,7 @@ module.exports = {
   testRegex: '\\\\.(test|spec)\\\\.ts$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'json'],
   transform: {
-    '^.+\\\\.ts$': ['ts-jest', { isolatedModules: true, tsconfig: { esModuleInterop: true, target: 'es2019', lib: ['es2019', 'dom'] } }],
+    '^.+\\\\.ts$': ['ts-jest', { tsconfig: { isolatedModules: true, esModuleInterop: true, target: 'es2019', lib: ['es2019', 'dom'] } }],
   },
   moduleNameMapper: { '^ts-dedent$': ${JSON.stringify(installed)} },
 };

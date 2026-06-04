@@ -13,7 +13,7 @@ export function dedent(templ) {
         return arr;
     }, []);
     if (indentLengths.length) {
-        var pattern_1 = new RegExp("\n[\t ]{" + Math.min.apply(Math, indentLengths) + "}", 'g');
+        var pattern_1 = new RegExp("\n[\t ]{".concat(Math.min.apply(Math, indentLengths), "}"), 'g');
         strings = strings.map(function (str) { return str.replace(pattern_1, '\n'); });
     }
     strings[0] = strings[0].replace(/^\r?\n/, '');
@@ -26,7 +26,7 @@ export function dedent(templ) {
             indentedValue = String(value)
                 .split('\n')
                 .map(function (str, i) {
-                return i === 0 ? str : "" + endentation + str;
+                return i === 0 ? str : "".concat(endentation).concat(str);
             })
                 .join('\n');
         }

@@ -1,3 +1,4 @@
+import { describe, it, expect } from '@jest/globals';
 import { dedent } from 'ts-dedent';
 
 function tag(strings: TemplateStringsArray, ...values: number[]) {
