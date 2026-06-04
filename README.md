@@ -85,6 +85,25 @@ console.log(dedent(`
 Wait! I lied. Dedent can also be used as a function.
 ```
 
+## Releasing
+
+Releases are automated by the [`Release` workflow](.github/workflows/release.yml): on GitHub go
+to **Actions → Release → Run workflow** on `master` and enter the version without a leading `v`
+(e.g. `2.3.0`, or `2.3.0-beta.1` for a prerelease). The workflow tests, verifies the packaged
+artifact on every maintained Node version across Linux/macOS/Windows, then publishes to npm with
+provenance, pushes the release commit + tag, and creates the GitHub release.
+
+Two one-time prerequisites must be configured before the first release:
+
+1. **npm trusted publisher** — on npmjs.com, add a GitHub Actions trusted publisher for the
+   `ts-dedent` package (repository `tamino-martinius/node-ts-dedent`, workflow `release.yml`).
+   Publishing is tokenless via OIDC `--provenance`; no `NPM_TOKEN` is stored.
+2. **Branch protection** — `master` must allow `github-actions[bot]` to push the release commit
+   and tag.
+
+Each release derives its notes from the `## vNext` section of [`HISTORY.md`](HISTORY.md), so put
+the changelog entries there (replacing `TBD`) before running the workflow.
+
 ## License
 
 MIT

@@ -1,0 +1,213 @@
+name: Release
+
+# ONE-TIME PREREQUISITES (see the "Releasing" section in README.md):
+#   1. Configure an npm trusted publisher for `ts-dedent` on npmjs.com
+#      (provider: GitHub Actions, repo: tamino-martinius/node-ts-dedent, workflow: release.yml).
+#      Publishing is tokenless via OIDC `--provenance`; without this, the publish step fails.
+#   2. Branch protection on `master` must allow github-actions[bot] to push the release
+#      commit + tag.
+# Before dispatching: put the real changelog under "## vNext" in HISTORY.md (replace "TBD").
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semver version (no leading "v"), e.g. 2.3.0 or 2.3.0-beta.1'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      dist_tag: ${{ steps.dist.outputs.tag }}
+      is_prerelease: ${{ steps.dist.outputs.is_prerelease }}
+      have_notes: ${{ steps.notes.outputs.have_notes }}
+    steps:
+      - name: Guard ref
+        if: github.ref_name != 'master'
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          echo "::error::release may only be dispatched from master (got $REF_NAME)"
+          exit 1
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate version input
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::version '$VERSION' is not valid semver (no leading v)"
+            exit 1
+          fi
+      - name: Refuse if tag already exists
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if git ls-remote --tags origin "refs/tags/v$VERSION" | grep -q .; then
+            echo "::error::tag v$VERSION already exists on origin"
+            exit 1
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - name: Test source (lint + jest) and helpers
+        run: |
+          npm test
+          npm run test:scripts
+      - name: Derive npm dist-tag
+        id: dist
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          TAG=$(node .github/scripts/release-derive-dist-tag.mjs "$VERSION")
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [ "$TAG" = "latest" ]; then
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Bump package version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: node .github/scripts/release-bump-version.mjs "$VERSION"
+      - name: Refresh package-lock.json
+        run: npm install --package-lock-only
+      - name: Compose release notes
+        id: notes
+        run: |
+          set +e
+          node .github/scripts/release-compose-notes.mjs .release-notes.md
+          code=$?
+          set -e
+          if [ "$code" = "0" ]; then
+            echo "have_notes=true" >> "$GITHUB_OUTPUT"
+          elif [ "$code" = "1" ]; then
+            echo "have_notes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::release-compose-notes failed with $code"
+            exit "$code"
+          fi
+      - name: Roll HISTORY.md (stable releases only)
+        if: steps.dist.outputs.is_prerelease == 'false'
+        env:
+          VERSION: ${{ inputs.version }}
+        run: node .github/scripts/release-roll-history.mjs "$VERSION"
+      - name: Build
+        run: npm run compile
+      - name: Pack tarball
+        run: npm pack
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-tarball
+          path: '*.tgz'
+          if-no-files-found: error
+      - name: Upload mutated files
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: |
+            package.json
+            package-lock.json
+            HISTORY.md
+            .release-notes.md
+          if-no-files-found: ignore
+
+  verify:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node:
+          - 22.x # Maintenance LTS — EOL 2025-10-21 / 2027-04-30
+          - 24.x # Active LTS      — EOL 2026-10-20 / 2028-04-30
+          - 26.x # Current         — EOL 2027-10-27 / 2029-04-30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: release-tarball
+      - name: Verify packaged artifact (CJS + ESM + types)
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: node .github/scripts/verify-packaged.mjs "ts-dedent-$VERSION.tgz"
+
+  publish:
+    needs: [build, verify]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          registry-url: https://registry.npmjs.org
+      - name: Restore released files
+        uses: actions/download-artifact@v4
+        with:
+          name: release-files
+      - name: Restore tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: release-tarball
+      - name: Upgrade npm (OIDC trusted publishing)
+        run: npm install -g npm@latest
+      # Commit + tag are created LOCALLY here and pushed only AFTER npm publish
+      # succeeds, so a publish failure (e.g. trusted publisher not yet configured)
+      # leaves master untouched and the release is cleanly retryable.
+      - name: Commit and tag (local)
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json HISTORY.md
+          git commit -m "chore(release): v$VERSION"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+      - name: Publish to npm with provenance
+        env:
+          VERSION: ${{ inputs.version }}
+          DIST_TAG: ${{ needs.build.outputs.dist_tag }}
+        run: npm publish "./ts-dedent-$VERSION.tgz" --provenance --access public --tag "$DIST_TAG"
+      - name: Push release commit and tag
+        run: git push origin master --follow-tags
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          IS_PRERELEASE: ${{ needs.build.outputs.is_prerelease }}
+          HAVE_NOTES: ${{ needs.build.outputs.have_notes }}
+        run: |
+          FLAG="--latest"
+          if [ "$IS_PRERELEASE" = "true" ]; then FLAG="--prerelease"; fi
+          if [ "$HAVE_NOTES" = "true" ]; then
+            gh release create "v$VERSION" "./ts-dedent-$VERSION.tgz" \
+              --title "v$VERSION" --notes-file .release-notes.md $FLAG
+          else
+            gh release create "v$VERSION" "./ts-dedent-$VERSION.tgz" \
+              --title "v$VERSION" --generate-notes $FLAG
+          fi

@@ -8,9 +8,8 @@
   "jsnext:main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "types": "./dist/index.d.ts",
-    "require": "./dist/index.js",
-    "import": "./esm/index.js"
+    "import": { "types": "./esm/index.d.ts", "default": "./esm/index.js" },
+    "require": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
   },
   "license": "MIT",
   "files": [
@@ -42,10 +41,11 @@
     "coverage": "rm -rf coverage* && jest --coverage",
     "pretest": "npm run lint",
     "test": "jest",
+    "test:scripts": "node --test .github/scripts/__tests__/*.mjs",
     "lint": "eslint .",
     "watch": "tsc -w",
     "ci": "npm run coverage",
-    "compile": "rm -rf dist/* && rm -rf esm/* && tsc --module commonjs --outdir dist && tsc --module es6 --outdir esm",
+    "compile": "rm -rf dist/* && rm -rf esm/* && tsc --module commonjs --outdir dist && tsc --module es6 --outdir esm && node .github/scripts/write-build-markers.mjs",
     "preversion": "npm run compile && git add ."
   },
   "devDependencies": {
@@ -59,7 +59,7 @@
   },
   "jest": {
     "transform": {
-      ".ts": "ts-jest"
+      ".ts": ["ts-jest", {"tsconfig": "tsconfig.jest.json"}]
     },
     "testRegex": "\\.(test|spec)\\.ts$",
     "moduleFileExtensions": [
@@ -67,6 +67,9 @@
       "tsx",
       "js",
       "json"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^ts-dedent$": "<rootDir>/src/index.ts"
+    }
   }
 }
