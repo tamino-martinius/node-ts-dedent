@@ -3,6 +3,10 @@
     "target": "es5",
     "module": "es6",
     "moduleResolution": "node",
+    // es5 target + node10 resolution are intentional for broad compatibility
+    // (engines.node >= 6.10, legacy browsers, classic `types`/`main` resolution).
+    // TypeScript 6.0 deprecated both; suppress until a deliberate compat change.
+    "ignoreDeprecations": "6.0",
     "sourceMap": true,
     "declaration": true,
     "rootDir": "src",
@@ -31,12 +35,5 @@
     "*/__tests__",
     "*/__mocks__",
     "dist"
-  ],
-  "jest": {
-    "globals": {
-      "ts-jest": {
-        "tsConfigFile": "tsconfig.jest.json"
-      }
-    }
-  }
+  ]
 }

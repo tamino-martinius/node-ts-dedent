@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dedent = void 0;
+exports.dedent = dedent;
 function dedent(templ) {
     var values = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -16,7 +16,7 @@ function dedent(templ) {
         return arr;
     }, []);
     if (indentLengths.length) {
-        var pattern_1 = new RegExp("\n[\t ]{" + Math.min.apply(Math, indentLengths) + "}", 'g');
+        var pattern_1 = new RegExp("\n[\t ]{".concat(Math.min.apply(Math, indentLengths), "}"), 'g');
         strings = strings.map(function (str) { return str.replace(pattern_1, '\n'); });
     }
     strings[0] = strings[0].replace(/^\r?\n/, '');
@@ -29,7 +29,7 @@ function dedent(templ) {
             indentedValue = String(value)
                 .split('\n')
                 .map(function (str, i) {
-                return i === 0 ? str : "" + endentation + str;
+                return i === 0 ? str : "".concat(endentation).concat(str);
             })
                 .join('\n');
         }
@@ -37,6 +37,5 @@ function dedent(templ) {
     });
     return string;
 }
-exports.dedent = dedent;
 exports.default = dedent;
 //# sourceMappingURL=index.js.map
