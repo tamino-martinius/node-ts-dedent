@@ -2,6 +2,7 @@
 
 ## vNext
 
+- Documented the dedent algorithm in the readme with a step-by-step "How it works" section (closes #39)
 - Added an automated release workflow: npm publish with provenance via OIDC trusted publishing, GitHub release creation, and automatic version/HISTORY maintenance
 - CI now verifies the packaged tarball (CommonJS `require`, ESM `import`, and TypeScript type resolution) on every maintained Node version (22/24/26) across Linux, macOS, and Windows
 - Fixed package `exports` to use per-condition `types` so TypeScript resolves the correct declarations for both ESM (`import`) and CommonJS (`require`) consumers
