@@ -1,6 +1,6 @@
 {
   "name": "ts-dedent",
-  "version": "2.2.0",
+  "version": "2.3.0-beta.2",
   "description": "TypeScript package which smartly trims and strips indentation from multi-line strings",
   "author": "Tamino Martinius <dev@zaku.eu>",
   "main": "./dist/index.js",
@@ -8,8 +8,14 @@
   "jsnext:main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "import": { "types": "./esm/index.d.ts", "default": "./esm/index.js" },
-    "require": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+    "import": {
+      "types": "./esm/index.d.ts",
+      "default": "./esm/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "license": "MIT",
   "files": [
@@ -58,7 +64,12 @@
   },
   "jest": {
     "transform": {
-      ".ts": ["ts-jest", {"tsconfig": "tsconfig.jest.json"}]
+      ".ts": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.jest.json"
+        }
+      ]
     },
     "testRegex": "\\.(test|spec)\\.ts$",
     "moduleFileExtensions": [
