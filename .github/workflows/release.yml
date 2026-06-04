@@ -1,11 +1,15 @@
 name: Release
 
-# ONE-TIME PREREQUISITES (see the "Releasing" section in README.md):
+# ONE-TIME PREREQUISITES:
 #   1. Configure an npm trusted publisher for `ts-dedent` on npmjs.com
 #      (provider: GitHub Actions, repo: tamino-martinius/node-ts-dedent, workflow: release.yml).
 #      Publishing is tokenless via OIDC `--provenance`; without this, the publish step fails.
-#   2. Branch protection on `master` must allow github-actions[bot] to push the release
-#      commit + tag.
+#   2. Settings -> Actions -> General -> Workflow permissions: enable
+#      "Allow GitHub Actions to create and approve pull requests" so the publish job
+#      can open the version-bump PR to master.
+# This workflow NEVER pushes to master directly. It publishes to npm, tags the release,
+# pushes a `release/v<version>` branch, and opens a PR to master that you merge manually
+# (use a merge commit so the v<version> tag stays in master history).
 # Before dispatching: put the real changelog under "## vNext" in HISTORY.md (replace "TBD").
 
 on:
@@ -19,6 +23,7 @@ on:
 permissions:
   contents: write
   id-token: write
+  pull-requests: write
 
 concurrency:
   group: release
@@ -177,8 +182,10 @@ jobs:
       - name: Upgrade npm (OIDC trusted publishing)
         run: npm install -g npm@latest
       # Commit + tag are created LOCALLY here and pushed only AFTER npm publish
-      # succeeds, so a publish failure (e.g. trusted publisher not yet configured)
-      # leaves master untouched and the release is cleanly retryable.
+      # succeeds, to a dedicated `release/v<version>` branch — never to master. A
+      # publish failure therefore leaves master AND origin untouched, and the release
+      # is cleanly retryable. The version bump reaches master only when you merge the
+      # PR opened at the end of this job.
       - name: Commit and tag (local)
         env:
           VERSION: ${{ inputs.version }}
@@ -193,8 +200,14 @@ jobs:
           VERSION: ${{ inputs.version }}
           DIST_TAG: ${{ needs.build.outputs.dist_tag }}
         run: npm publish "./ts-dedent-$VERSION.tgz" --provenance --access public --tag "$DIST_TAG"
-      - name: Push release commit and tag
-        run: git push origin master --follow-tags
+      # master is protected, so push the release commit to a dedicated branch and
+      # the tag (tags are not branch-protected). The branch feeds the PR below.
+      - name: Push release branch and tag
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          git push origin "HEAD:refs/heads/release/v$VERSION"
+          git push origin "refs/tags/v$VERSION"
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -211,3 +224,27 @@ jobs:
             gh release create "v$VERSION" "./ts-dedent-$VERSION.tgz" \
               --title "v$VERSION" --generate-notes $FLAG
           fi
+      # Open a PR so the version bump lands on master through review, not a direct
+      # push. Merge it manually (merge commit) to keep the v<version> tag in history.
+      - name: Open version-bump PR to master
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          DIST_TAG: ${{ needs.build.outputs.dist_tag }}
+        run: |
+          {
+            echo "Automated release of \`v$VERSION\` (npm dist-tag: \`$DIST_TAG\`)."
+            echo
+            echo "\`v$VERSION\` is already published to npm with a GitHub release and git tag."
+            echo "This PR only brings the version bump (package.json, package-lock.json, HISTORY.md) into \`master\`."
+            echo
+            echo "Merge with a **merge commit** (not squash/rebase) so the \`v$VERSION\` tag stays in master history."
+            echo
+            echo "- npm: https://www.npmjs.com/package/ts-dedent/v/$VERSION"
+            echo "- Release: https://github.com/tamino-martinius/node-ts-dedent/releases/tag/v$VERSION"
+          } > "$RUNNER_TEMP/pr-body.md"
+          gh pr create \
+            --base master \
+            --head "release/v$VERSION" \
+            --title "chore(release): v$VERSION" \
+            --body-file "$RUNNER_TEMP/pr-body.md"
