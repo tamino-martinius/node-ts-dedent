@@ -31,7 +31,12 @@ The test file alone is 39% of the package. Nothing consumers can reach resolves 
 Ship only what consumers execute or type-check against, and add a CI guard so the package
 cannot silently re-inflate.
 
-Target: 11,194 bytes unpacked, a 59% reduction.
+Target: 11,117 bytes unpacked, a 59% reduction.
+
+(The first draft of this spec predicted 11,194 by subtracting the dropped files from the
+current total. The measured result is 77 bytes smaller, because two of the *kept* files also
+shrink: removing the 33-byte `//# sourceMappingURL=index.js.map` comment from each of
+`dist/index.js` and `esm/index.js`, and dropping the `"src"` entry from `package.json`.)
 
 ## Design
 
@@ -114,14 +119,34 @@ The issue also proposes going ESM-only with `engines.node >= 22`.
 
 Deferred to a possible future major release. ts-dedent is a leaf utility depended on broadly
 across the JavaScript toolchain, and going ESM-only would only drop the `dist/` half of the
-dual build — 1,897 bytes of the 11,194 that remain after this cleanup. That is a large
+dual build — 1,864 bytes of the 11,117 that remain after this cleanup. That is a large
 consumer break for a small size win, and it is a decision worth making on its own merits
 rather than folding into a packaging fix. The stale `engines.node: ">=6.10"` field is part of
 that same future conversation and is left untouched here.
 
+## Unrelated breakage found during implementation
+
+`verify-packaged.mjs` currently fails one step, on this branch and on `master` alike:
+
+```
+types: types-cjs (module=commonjs, moduleResolution=node)
+error TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration.
+```
+
+The script deliberately installs `typescript@latest` to catch resolution regressions against
+current TypeScript. `latest` is now 7.0.2, which *removed* node10 resolution outright rather
+than merely deprecating it, so the script's `--ignoreDeprecations 6.0` escape hatch no longer
+applies.
+
+This is environment drift, not a regression from this change — confirmed by running the script
+against an unmodified `HEAD` worktree and observing the identical failure. It is left untouched
+here to keep this diff minimal, but it will keep CI red until addressed separately. Fixing it
+means deciding whether ts-dedent still supports classic node10 type resolution at all, which is
+the same `engines`/major-version conversation deferred above.
+
 ## Verification
 
-- `npm pack --dry-run --json` — confirm the file list and the 11,194-byte unpacked size.
+- `npm pack --dry-run --json` — confirm the file list and the 11,117-byte unpacked size.
 - `npm test` and `npm run coverage` — confirm dropping `sourceMap` from `tsconfig.json` does
   not disturb jest. `tsconfig.jest.json` extends `tsconfig.json`, but ts-jest manages its own
   in-memory source maps, so stack traces and coverage line-mapping are expected to be

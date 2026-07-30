@@ -2,7 +2,8 @@
 
 ## vNext
 
-TBD
+- Reduced the published package size from 27,376 to 11,117 bytes unpacked (59%) by no longer shipping TypeScript sources, tests, and source maps (closes #51)
+- Added a packaged-contents guard to CI so the tarball cannot silently re-inflate
 
 ## v2.3.0
 

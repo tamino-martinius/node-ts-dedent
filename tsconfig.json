@@ -7,7 +7,6 @@
     // (engines.node >= 6.10, legacy browsers, classic `types`/`main` resolution).
     // TypeScript 6.0 deprecated both; suppress until a deliberate compat change.
     "ignoreDeprecations": "6.0",
-    "sourceMap": true,
     "declaration": true,
     "rootDir": "src",
     "outDir": "esm",

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, copyFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, copyFileSync, rmSync, readdirSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -69,6 +69,38 @@ try {
     },
     { critical: true },
   );
+
+  // Walk the installed tree with node:fs rather than `tar -tf`: bsdtar on Windows runners
+  // behaves differently from GNU tar, and the installed directory is what consumers
+  // actually receive after extraction.
+  step('packaged contents: no sources, tests, or source maps', () => {
+    const pkgDir = join(tmp, 'node_modules', 'ts-dedent');
+    const files = [];
+    const walk = (dir) => {
+      for (const entry of readdirSync(dir)) {
+        const full = join(dir, entry);
+        if (statSync(full).isDirectory()) {
+          walk(full);
+        } else {
+          files.push(full.slice(pkgDir.length + 1).replace(/\\/g, '/'));
+        }
+      }
+    };
+    walk(pkgDir);
+    const forbidden = files.filter((f) => {
+      const segments = f.split('/');
+      return (
+        f.endsWith('.map') ||
+        segments.includes('src') ||
+        segments.includes('__tests__') ||
+        (f.endsWith('.ts') && !f.endsWith('.d.ts'))
+      );
+    });
+    if (forbidden.length) {
+      throw new Error(`package contains forbidden files:\n  ${forbidden.join('\n  ')}`);
+    }
+    console.log(`${files.length} files checked, none forbidden`);
+  });
 
   // 1) Runtime smoke — every import style.
   step('copy smoke consumers into consumer project', () => {
