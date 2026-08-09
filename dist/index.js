@@ -38,4 +38,3 @@ function dedent(templ) {
     return string;
 }
 exports.default = dedent;
-//# sourceMappingURL=index.js.map
