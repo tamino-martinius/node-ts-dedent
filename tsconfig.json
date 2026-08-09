@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    // es2020, not higher: `?.` and `??` are the newest syntax the source uses and both are
+    // ES2020, so es2022 emits byte-identical output. es2020 runs on Node 14+, below the
+    // engines.node >= 18 floor.
+    "target": "es2020",
     "module": "es6",
+    // node10 resolution is still intentional: it keeps the classic top-level `types`/`main`
+    // path working for consumers on older TypeScript (it ignores `exports`). TypeScript 6.0
+    // deprecated it; ignoreDeprecations suppresses that until a deliberate compat change.
     "moduleResolution": "node",
-    // es5 target + node10 resolution are intentional for broad compatibility
-    // (engines.node >= 6.10, legacy browsers, classic `types`/`main` resolution).
-    // TypeScript 6.0 deprecated both; suppress until a deliberate compat change.
     "ignoreDeprecations": "6.0",
     "declaration": true,
     "rootDir": "src",

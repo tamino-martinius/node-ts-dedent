@@ -40,7 +40,7 @@
     "harmony"
   ],
   "engines": {
-    "node": ">=6.10"
+    "node": ">=18"
   },
   "scripts": {
     "coverage": "rm -rf coverage* && jest --coverage",

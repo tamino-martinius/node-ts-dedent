@@ -2,8 +2,11 @@
 
 ## vNext
 
-- Reduced the published package size from 27,376 to 11,117 bytes unpacked (59%) by no longer shipping TypeScript sources, tests, and source maps (closes #51)
+- **Breaking:** raised the minimum supported Node version from 6.10 to 18. Node 16 and older are long past end-of-life
+- **Breaking:** the build now targets ES2020 instead of ES5. The published code uses native `?.`, `??`, template literals, and rest parameters rather than downlevelled equivalents, which requires Node 14 or newer to parse
+- Reduced the published package size from 27,376 to 10,551 bytes unpacked (61%) by no longer shipping TypeScript sources, tests, and source maps (closes #51), and by dropping the ES5 downlevel helpers
 - Added a packaged-contents guard to CI so the tarball cannot silently re-inflate
+- Removed the classic node10 type-resolution check from the packaged verification: TypeScript 7 removed that resolution mode outright, so the check could no longer run. The top-level `types`/`main` fields are still published
 
 ## v2.3.0
 
