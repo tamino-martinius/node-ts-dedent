@@ -123,15 +123,11 @@ try {
     writeFileSync(join(d, 'use_default.ts'), useDefault);
     for (const m of modes) {
       step(`types: ${dir} (module=${m.module}, moduleResolution=${m.moduleResolution})`, () => {
-        const extraFlags = m.ignoreDeprecations
-          ? ['--ignoreDeprecations', m.ignoreDeprecations]
-          : [];
         run(
           node,
           [
             tscBin, '--noEmit', '--strict', '--skipLibCheck', '--target', 'es2019',
             '--module', m.module, '--moduleResolution', m.moduleResolution,
-            ...extraFlags,
             join(d, 'use_named.ts'), join(d, 'use_default.ts'),
           ],
           { cwd: tmp },
@@ -140,12 +136,12 @@ try {
     }
   }
 
-  typeCase('types-cjs', 'commonjs', [
-    // classic node10 resolution validates the legacy top-level `types`/`main` path (it ignores
-    // `exports`). TS6 made node10 a hard error, so suppress that one deprecation.
-    { module: 'commonjs', moduleResolution: 'node', ignoreDeprecations: '6.0' },
-    { module: 'node16', moduleResolution: 'node16' },
-  ]);
+  // A classic node10 case used to live here to cover the legacy top-level `types`/`main` path.
+  // It is gone because this script installs `typescript@latest`, and TS7 REMOVED node10
+  // resolution outright (TS5108) rather than deprecating it — the case can never pass again.
+  // The top-level `types`/`main` fields are still published for consumers on older TypeScript;
+  // they are simply no longer exercised here.
+  typeCase('types-cjs', 'commonjs', [{ module: 'node16', moduleResolution: 'node16' }]);
   typeCase('types-esm', 'module', [
     { module: 'nodenext', moduleResolution: 'nodenext' },
     { module: 'esnext', moduleResolution: 'bundler' },
